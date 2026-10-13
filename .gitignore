@@ -1,0 +1,56 @@
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+
+# Python environments, build artifacts, and caches
+.venv/
+.venv-*/
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.pytest-*/
+.pytest-stage*/
+.test-*/
+.p1-2-*/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Local databases, vector stores, uploads, OCR input, and MCP state
+/data/
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+*.sqlite-wal
+*.sqlite-shm
+*.log
+*.tmp
+
+# Temporary diagnostics and acceptance data
+.tmp-*/
+.api-*/
+.client-*/
+.policy-probe-*/
+.probe-*/
+.b*-probe/
+.http-acceptance-runtime/
+
+# Preserved historical worktrees at the repository root (archived by copy).
+/01_agent/
+/03_deutsch_chat/
+/04_stage2_unified_agent/
+/03_deutsch_chat.zip
+
+# Local editor/OS files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

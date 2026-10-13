@@ -1,0 +1,46 @@
+{
+  "total": 300,
+  "correct": 300,
+  "accuracy": 1.0,
+  "per_class": {
+    "rag": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "web_search": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "no_tool": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    }
+  },
+  "macro_f1": 1.0,
+  "mixed_sources_accuracy": 1.0,
+  "mixed_sources_total": 15,
+  "confusion_matrix": {
+    "rag": {
+      "rag": 100,
+      "web_search": 0,
+      "no_tool": 0
+    },
+    "web_search": {
+      "rag": 0,
+      "web_search": 100,
+      "no_tool": 0
+    },
+    "no_tool": {
+      "rag": 0,
+      "web_search": 0,
+      "no_tool": 100
+    }
+  },
+  "errors": [],
+  "average_route_ms": 0.02250966671150915,
+  "errors_with_reason": [],
+  "dataset_status": "engineering development candidates, not frozen independent human ground truth"
+}

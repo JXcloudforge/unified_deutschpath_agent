@@ -1,0 +1,20 @@
+[
+  {"message": "请解释 Dativ 的用法", "expected": "rag"},
+  {"message": "Ausbildung 是什么？", "expected": "rag"},
+  {"message": "德国职业教育制度有什么特点？", "expected": "rag"},
+  {"message": "What is Akkusativ grammar?", "expected": "rag"},
+  {"message": "请总结这个文件", "expected": "rag", "has_attachment": true},
+  {"message": "上传资料里的项目代号是什么？", "expected": "rag", "has_attachment": true},
+  {"message": "德国最新签证政策是什么？", "expected": "web_search"},
+  {"message": "今天柏林天气怎么样？", "expected": "web_search"},
+  {"message": "请搜索网上今天的欧元汇率", "expected": "web_search"},
+  {"message": "latest Germany news", "expected": "web_search"},
+  {"message": "current stock price of SAP", "expected": "web_search"},
+  {"message": "根据上传文件和最新签证政策给建议", "expected": "web_search", "has_attachment": true},
+  {"message": "你好", "expected": "no_tool"},
+  {"message": "把今天的作业翻译成德语", "expected": "no_tool"},
+  {"message": "Translate: Guten Morgen", "expected": "no_tool"},
+  {"message": "请润色这句德语", "expected": "no_tool"},
+  {"message": "帮我把这段话改写得更自然", "expected": "no_tool"},
+  {"message": "谢谢你", "expected": "no_tool"}
+]

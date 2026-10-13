@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "application": "Deutschpath Unified Agent",
+  "current_version_source": "pyproject.toml",
+  "milestones": [
+    {"id": "M01", "title": "A3 Agent foundation", "summary": "统一LLM边界、状态上下文与编排入口。", "features": ["LLM Client and FakeLLM", "State / Reasoning / Action boundaries", "Tool Registry and Executor concepts"], "technology": ["Python", "Pydantic", "DeepSeek-compatible HTTP client"], "chain": "Input → State → Reasoning → Action → Output", "problem": "早期原型的模型调用与业务控制需要可测试的统一边界。", "status": "IMPLEMENTED; offline path TESTED", "document": "docs/iterations/M01_agent_foundation.md"},
+    {"id": "M02", "title": "A3 CRM and learning state", "summary": "以SQLite持久化用户学习状态、偏好与学习事件。", "features": ["Learner profile and CEFR levels", "Learning goals/preferences", "Learning events and persistence"], "technology": ["SQLite", "Pydantic models", "Repository/Service separation"], "chain": "User → CRM State → Context → Agent → Response", "problem": "对话需携带跨会话学习状态且用户数据需隔离。", "status": "IMPLEMENTED; isolated tests TESTED", "document": "docs/iterations/M02_crm_state.md"},
+    {"id": "M03", "title": "A4 Stage 1 chat application", "summary": "FastAPI、Streamlit、Session、消息历史与API Client。", "features": ["Streamlit chat", "FastAPI service", "Sessions, history and user scoping"], "technology": ["FastAPI", "Streamlit", "SQLite", "HTTPX"], "chain": "Streamlit → FastAPI → ChatService → LLM → SQLite", "problem": "把命令行原型变成可持久化的本机聊天应用。", "status": "IMPLEMENTED; automated and HTTP evidence recorded", "document": "docs/iterations/M03_chat_application.md"},
+    {"id": "M04", "title": "A4 Stage 2 files and RAG", "summary": "解析学习资料并提供Session隔离检索与上下文构建。", "features": ["TXT/MD/PDF/DOCX parsing", "Chroma knowledge and session retrieval", "ContextBuilder"], "technology": ["FileService", "ChromaDB", "Embeddings", "ContextBuilder"], "chain": "Upload → Parse → Embed → Retrieve → Context → LLM", "problem": "需要从用户上传资料和长期知识库中检索可追溯上下文。", "status": "IMPLEMENTED; isolated regression TESTED", "document": "docs/iterations/M04_file_rag.md"},
+    {"id": "M05", "title": "A4 Stage 3 Router and Web", "summary": "三分类Router、受控Web Search、混合证据聚合。", "features": ["Rules and Hybrid Router", "QueryGuard and Tavily adapter", "EvidenceAggregator and mixed_sources"], "technology": ["RuleBasedIntentRouter", "LLMIntentRouter", "Tavily", "EvidenceAggregator"], "chain": "Input → Router → RAG/Web/No Tool → Evidence → LLM → Output", "problem": "为请求选择合适证据来源并区分本地附件和公开网页。", "status": "IMPLEMENTED; offline TESTED; independent 98% NOT VERIFIED", "document": "docs/iterations/M05_router_web.md"},
+    {"id": "M06", "title": "MCP integration and productization", "summary": "Database/OCR MCP、Host工具规划、人工确认与版本中心。", "features": ["Database and OCR MCP servers", "MCP Client/Host and Tool Planner", "Confirmation-gated writes, API Settings, session UX"], "technology": ["MCP Python SDK", "RapidOCR", "SQLite", "Streamlit"], "chain": "User → Agent/Planner → MCP Client → OCR → Review → Database → Verify → Response", "problem": "以协议化隔离工具能力，并阻止未经核对的数据写入。", "status": "IMPLEMENTED; SDK protocol and isolated E2E TESTED", "document": "docs/iterations/M06_mcp_integration.md"}
+  ],
+  "releases": [
+    {"version": "0.1.1.dev0", "status": "unreleased development candidate", "document": "docs/releases/v0.1.1.dev0.md"},
+    {"version": "0.1.0-beta.1", "status": "historical local engineering beta acceptance record", "document": "docs/releases/v0.1.0-beta.1.md"}
+  ]
+}

@@ -1,0 +1,625 @@
+{
+  "english.png": {
+    "success": true,
+    "status": "ok",
+    "engine": "RapidOCR",
+    "engine_version": "3.10.0",
+    "model": "PP-OCRv6 multilingual small (ONNX Runtime CPU)",
+    "language": "en",
+    "raw_text": "Good morning\nGerman OCR test",
+    "lines": [
+      {
+        "text": "Good morning",
+        "confidence": 0.99998,
+        "bbox": [
+          27.0,
+          22.0,
+          294.0,
+          83.0
+        ],
+        "words": [
+          {
+            "text": "Good morning",
+            "confidence": 0.99998,
+            "polygon": [
+              [
+                29.0,
+                22.0
+              ],
+              [
+                294.0,
+                29.0
+              ],
+              [
+                292.0,
+                83.0
+              ],
+              [
+                27.0,
+                76.0
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "text": "German OCR test",
+        "confidence": 0.99996,
+        "bbox": [
+          27.0,
+          91.0,
+          365.0,
+          150.0
+        ],
+        "words": [
+          {
+            "text": "German OCR test",
+            "confidence": 0.99996,
+            "polygon": [
+              [
+                27.0,
+                92.0
+              ],
+              [
+                364.0,
+                91.0
+              ],
+              [
+                365.0,
+                149.0
+              ],
+              [
+                27.0,
+                150.0
+              ]
+            ]
+          }
+        ]
+      }
+    ],
+    "tables": [],
+    "warnings": []
+  },
+  "german.png": {
+    "success": true,
+    "status": "ok",
+    "engine": "RapidOCR",
+    "engine_version": "3.10.0",
+    "model": "PP-OCRv6 multilingual small (ONNX Runtime CPU)",
+    "language": "de",
+    "raw_text": "Guten Morgen\nFünf große Wörter: Straße über München.",
+    "lines": [
+      {
+        "text": "Guten Morgen",
+        "confidence": 0.99896,
+        "bbox": [
+          29.0,
+          26.0,
+          294.0,
+          82.0
+        ],
+        "words": [
+          {
+            "text": "Guten Morgen",
+            "confidence": 0.99896,
+            "polygon": [
+              [
+                30.0,
+                26.0
+              ],
+              [
+                294.0,
+                30.0
+              ],
+              [
+                294.0,
+                82.0
+              ],
+              [
+                29.0,
+                78.0
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "text": "Fünf große Wörter: Straße über München.",
+        "confidence": 0.99989,
+        "bbox": [
+          27.0,
+          96.0,
+          780.0,
+          154.0
+        ],
+        "words": [
+          {
+            "text": "Fünf große Wörter: Straße über München.",
+            "confidence": 0.99989,
+            "polygon": [
+              [
+                27.0,
+                96.0
+              ],
+              [
+                780.0,
+                97.0
+              ],
+              [
+                780.0,
+                154.0
+              ],
+              [
+                27.0,
+                152.0
+              ]
+            ]
+          }
+        ]
+      }
+    ],
+    "tables": [],
+    "warnings": []
+  },
+  "vocabulary_table.png": {
+    "success": true,
+    "status": "ok",
+    "engine": "RapidOCR",
+    "engine_version": "3.10.0",
+    "model": "PP-OCRv6 multilingual small (ONNX Runtime CPU)",
+    "language": "en",
+    "raw_text": "Word Meaning Level\nHaus house A1\ngehen to go A1\nverstehen understand A2",
+    "lines": [
+      {
+        "text": "Word Meaning Level",
+        "confidence": 0.99998,
+        "bbox": [
+          42.0,
+          42.0,
+          907.0,
+          94.0
+        ],
+        "words": [
+          {
+            "text": "Word",
+            "confidence": 0.99997,
+            "polygon": [
+              [
+                42.0,
+                42.0
+              ],
+              [
+                148.0,
+                42.0
+              ],
+              [
+                148.0,
+                94.0
+              ],
+              [
+                42.0,
+                94.0
+              ]
+            ]
+          },
+          {
+            "text": "Meaning",
+            "confidence": 0.99998,
+            "polygon": [
+              [
+                413.0,
+                43.0
+              ],
+              [
+                574.0,
+                43.0
+              ],
+              [
+                574.0,
+                94.0
+              ],
+              [
+                413.0,
+                94.0
+              ]
+            ]
+          },
+          {
+            "text": "Level",
+            "confidence": 0.99999,
+            "polygon": [
+              [
+                803.0,
+                42.0
+              ],
+              [
+                907.0,
+                42.0
+              ],
+              [
+                907.0,
+                93.0
+              ],
+              [
+                803.0,
+                93.0
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "text": "Haus house A1",
+        "confidence": 0.9999433333333334,
+        "bbox": [
+          43.0,
+          122.0,
+          860.0,
+          173.0
+        ],
+        "words": [
+          {
+            "text": "Haus",
+            "confidence": 0.99997,
+            "polygon": [
+              [
+                43.0,
+                123.0
+              ],
+              [
+                147.0,
+                123.0
+              ],
+              [
+                147.0,
+                173.0
+              ],
+              [
+                43.0,
+                173.0
+              ]
+            ]
+          },
+          {
+            "text": "house",
+            "confidence": 0.99992,
+            "polygon": [
+              [
+                412.0,
+                122.0
+              ],
+              [
+                532.0,
+                122.0
+              ],
+              [
+                532.0,
+                173.0
+              ],
+              [
+                412.0,
+                173.0
+              ]
+            ]
+          },
+          {
+            "text": "A1",
+            "confidence": 0.99994,
+            "polygon": [
+              [
+                801.0,
+                122.0
+              ],
+              [
+                860.0,
+                122.0
+              ],
+              [
+                860.0,
+                171.0
+              ],
+              [
+                801.0,
+                171.0
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "text": "gehen to go A1",
+        "confidence": 0.9716466666666667,
+        "bbox": [
+          41.0,
+          200.0,
+          861.0,
+          259.0
+        ],
+        "words": [
+          {
+            "text": "gehen",
+            "confidence": 0.99997,
+            "polygon": [
+              [
+                41.0,
+                202.0
+              ],
+              [
+                164.0,
+                202.0
+              ],
+              [
+                164.0,
+                258.0
+              ],
+              [
+                41.0,
+                258.0
+              ]
+            ]
+          },
+          {
+            "text": "to go",
+            "confidence": 0.91502,
+            "polygon": [
+              [
+                409.0,
+                200.0
+              ],
+              [
+                513.0,
+                200.0
+              ],
+              [
+                513.0,
+                259.0
+              ],
+              [
+                409.0,
+                259.0
+              ]
+            ]
+          },
+          {
+            "text": "A1",
+            "confidence": 0.99995,
+            "polygon": [
+              [
+                800.0,
+                202.0
+              ],
+              [
+                859.0,
+                200.0
+              ],
+              [
+                861.0,
+                251.0
+              ],
+              [
+                801.0,
+                253.0
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "text": "verstehen understand A2",
+        "confidence": 0.99998,
+        "bbox": [
+          41.0,
+          281.0,
+          863.0,
+          335.0
+        ],
+        "words": [
+          {
+            "text": "verstehen",
+            "confidence": 0.99997,
+            "polygon": [
+              [
+                41.0,
+                284.0
+              ],
+              [
+                227.0,
+                281.0
+              ],
+              [
+                228.0,
+                331.0
+              ],
+              [
+                41.0,
+                335.0
+              ]
+            ]
+          },
+          {
+            "text": "understand",
+            "confidence": 0.99999,
+            "polygon": [
+              [
+                413.0,
+                284.0
+              ],
+              [
+                620.0,
+                284.0
+              ],
+              [
+                620.0,
+                333.0
+              ],
+              [
+                413.0,
+                333.0
+              ]
+            ]
+          },
+          {
+            "text": "A2",
+            "confidence": 0.99998,
+            "polygon": [
+              [
+                801.0,
+                281.0
+              ],
+              [
+                863.0,
+                281.0
+              ],
+              [
+                863.0,
+                331.0
+              ],
+              [
+                801.0,
+                331.0
+              ]
+            ]
+          }
+        ]
+      }
+    ],
+    "tables": [
+      {
+        "kind": "layout_candidate",
+        "rows": [
+          [
+            {
+              "text": "Word",
+              "confidence": 0.99997,
+              "bbox": [
+                42.0,
+                42.0,
+                148.0,
+                94.0
+              ]
+            },
+            {
+              "text": "Meaning",
+              "confidence": 0.99998,
+              "bbox": [
+                413.0,
+                43.0,
+                574.0,
+                94.0
+              ]
+            },
+            {
+              "text": "Level",
+              "confidence": 0.99999,
+              "bbox": [
+                803.0,
+                42.0,
+                907.0,
+                93.0
+              ]
+            }
+          ],
+          [
+            {
+              "text": "Haus",
+              "confidence": 0.99997,
+              "bbox": [
+                43.0,
+                123.0,
+                147.0,
+                173.0
+              ]
+            },
+            {
+              "text": "house",
+              "confidence": 0.99992,
+              "bbox": [
+                412.0,
+                122.0,
+                532.0,
+                173.0
+              ]
+            },
+            {
+              "text": "A1",
+              "confidence": 0.99994,
+              "bbox": [
+                801.0,
+                122.0,
+                860.0,
+                171.0
+              ]
+            }
+          ],
+          [
+            {
+              "text": "gehen",
+              "confidence": 0.99997,
+              "bbox": [
+                41.0,
+                202.0,
+                164.0,
+                258.0
+              ]
+            },
+            {
+              "text": "to go",
+              "confidence": 0.91502,
+              "bbox": [
+                409.0,
+                200.0,
+                513.0,
+                259.0
+              ]
+            },
+            {
+              "text": "A1",
+              "confidence": 0.99995,
+              "bbox": [
+                800.0,
+                200.0,
+                861.0,
+                253.0
+              ]
+            }
+          ],
+          [
+            {
+              "text": "verstehen",
+              "confidence": 0.99997,
+              "bbox": [
+                41.0,
+                281.0,
+                228.0,
+                335.0
+              ]
+            },
+            {
+              "text": "understand",
+              "confidence": 0.99999,
+              "bbox": [
+                413.0,
+                284.0,
+                620.0,
+                333.0
+              ]
+            },
+            {
+              "text": "A2",
+              "confidence": 0.99998,
+              "bbox": [
+                801.0,
+                281.0,
+                863.0,
+                331.0
+              ]
+            }
+          ]
+        ]
+      }
+    ],
+    "warnings": [
+      "table_cells_are_layout_candidates_and_require_human_review"
+    ]
+  }
+}

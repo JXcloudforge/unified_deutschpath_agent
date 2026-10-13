@@ -1,0 +1,314 @@
+{
+  "dataset": "engineering_development_300",
+  "accuracy": 0.8933333333333333,
+  "macro_f1": 0.8945102318068526,
+  "confusion_matrix": {
+    "rag": {
+      "rag": 88,
+      "web_search": 0,
+      "no_tool": 12
+    },
+    "web_search": {
+      "rag": 8,
+      "web_search": 88,
+      "no_tool": 4
+    },
+    "no_tool": {
+      "rag": 8,
+      "web_search": 0,
+      "no_tool": 92
+    }
+  },
+  "mixed_sources_accuracy": 1.0,
+  "average_route_ms": 0.017421999991711346,
+  "errors": [
+    {
+      "index": 20,
+      "message": "How do I pronounce the German ch sound?",
+      "expected": "rag",
+      "actual": "no_tool",
+      "expected_mixed_sources": false,
+      "actual_mixed_sources": false,
+      "reason": "no retrieval or real-time capability is required"
+    },
+    {
+      "index": 21,
+      "message": "How do I pronounce the German ch sound? Please be concise.",
+      "expected": "rag",
+      "actual": "no_tool",
+      "expected_mixed_sources": false,
+      "actual_mixed_sources": false,
+      "reason": "no retrieval or real-time capability is required"
+    },
+    {
+      "index": 22,
+      "message": "How do I pronounce the German ch sound? 请保持简洁。",
+      "expected": "rag",
+      "actual": "no_tool",
+      "expected_mixed_sources": false,
+      "actual_mixed_sources": false,
+      "reason": "no retrieval or real-time capability is required"
+    },
+    {
+      "index": 23,
+      "message": "How do I pronounce the German ch sound? Answer for a beginner.",
+      "expected": "rag",
+      "actual": "no_tool",
+      "expected_mixed_sources": false,
+      "actual_mixed_sources": false,
+      "reason": "no retrieval or real-time capability is required"
+    },
+    {
+      "index": 52,
+      "message": "Find the phrase in the attached markdown",
+      "expected": "rag",
+      "actual": "no_tool",
+      "expected_mixed_sources": false,
+      "actual_mixed_sources": false,
+      "reason": "no retrieval or real-time capability is required"
+    },
+    {
+      "index": 53,
+      "message": "Find the phrase in the attached markdown Please be concise.",
+      "expected": "rag",
+      "actual": "no_tool",
+      "expected_mixed_sources": false,
+      "actual_mixed_sources": false,
+      "reason": "no retrieval or real-time capability is required"
+    },
+    {
+      "index": 54,
+      "message": "Find the phrase in the attached markdown 请保持简洁。",
+      "expected": "rag",
+      "actual": "no_tool",
+      "expected_mixed_sources": false,
+      "actual_mixed_sources": false,
+      "reason": "no retrieval or real-time capability is required"
+    },
+    {
+      "index": 55,
+      "message": "Find the phrase in the attached markdown Answer for a beginner.",
+      "expected": "rag",
+      "actual": "no_tool",
+      "expected_mixed_sources": false,
+      "actual_mixed_sources": false,
+      "reason": "no retrieval or real-time capability is required"
+    },
+    {
+      "index": 96,
+      "message": "Use the knowledge base to explain German articles",
+      "expected": "rag",
+      "actual": "no_tool",
+      "expected_mixed_sources": false,
+      "actual_mixed_sources": false,
+      "reason": "no retrieval or real-time capability is required"
+    },
+    {
+      "index": 97,
+      "message": "Use the knowledge base to explain German articles Please be concise.",
+      "expected": "rag",
+      "actual": "no_tool",
+      "expected_mixed_sources": false,
+      "actual_mixed_sources": false,
+      "reason": "no retrieval or real-time capability is required"
+    },
+    {
+      "index": 98,
+      "message": "Use the knowledge base to explain German articles 请保持简洁。",
+      "expected": "rag",
+      "actual": "no_tool",
+      "expected_mixed_sources": false,
+      "actual_mixed_sources": false,
+      "reason": "no retrieval or real-time capability is required"
+    },
+    {
+      "index": 99,
+      "message": "Use the knowledge base to explain German articles Answer for a beginner.",
+      "expected": "rag",
+      "actual": "no_tool",
+      "expected_mixed_sources": false,
+      "actual_mixed_sources": false,
+      "reason": "no retrieval or real-time capability is required"
+    },
+    {
+      "index": 144,
+      "message": "实时查询柏林到汉堡的列车状态",
+      "expected": "web_search",
+      "actual": "no_tool",
+      "expected_mixed_sources": false,
+      "actual_mixed_sources": false,
+      "reason": "no retrieval or real-time capability is required"
+    },
+    {
+      "index": 145,
+      "message": "实时查询柏林到汉堡的列车状态 Please be concise.",
+      "expected": "web_search",
+      "actual": "no_tool",
+      "expected_mixed_sources": false,
+      "actual_mixed_sources": false,
+      "reason": "no retrieval or real-time capability is required"
+    },
+    {
+      "index": 146,
+      "message": "实时查询柏林到汉堡的列车状态 请保持简洁。",
+      "expected": "web_search",
+      "actual": "no_tool",
+      "expected_mixed_sources": false,
+      "actual_mixed_sources": false,
+      "reason": "no retrieval or real-time capability is required"
+    },
+    {
+      "index": 147,
+      "message": "实时查询柏林到汉堡的列车状态 Answer for a beginner.",
+      "expected": "web_search",
+      "actual": "no_tool",
+      "expected_mixed_sources": false,
+      "actual_mixed_sources": false,
+      "reason": "no retrieval or real-time capability is required"
+    },
+    {
+      "index": 156,
+      "message": "现在德国油价是多少？",
+      "expected": "web_search",
+      "actual": "rag",
+      "expected_mixed_sources": false,
+      "actual_mixed_sources": false,
+      "reason": "question targets local German/Germany knowledge"
+    },
+    {
+      "index": 157,
+      "message": "现在德国油价是多少？ Please be concise.",
+      "expected": "web_search",
+      "actual": "rag",
+      "expected_mixed_sources": false,
+      "actual_mixed_sources": false,
+      "reason": "question targets local German/Germany knowledge"
+    },
+    {
+      "index": 158,
+      "message": "现在德国油价是多少？ 请保持简洁。",
+      "expected": "web_search",
+      "actual": "rag",
+      "expected_mixed_sources": false,
+      "actual_mixed_sources": false,
+      "reason": "question targets local German/Germany knowledge"
+    },
+    {
+      "index": 159,
+      "message": "现在德国油价是多少？ Answer for a beginner.",
+      "expected": "web_search",
+      "actual": "rag",
+      "expected_mixed_sources": false,
+      "actual_mixed_sources": false,
+      "reason": "question targets local German/Germany knowledge"
+    },
+    {
+      "index": 180,
+      "message": "latest Germany travel advisory",
+      "expected": "web_search",
+      "actual": "rag",
+      "expected_mixed_sources": false,
+      "actual_mixed_sources": false,
+      "reason": "question targets local German/Germany knowledge"
+    },
+    {
+      "index": 181,
+      "message": "latest Germany travel advisory Please be concise.",
+      "expected": "web_search",
+      "actual": "rag",
+      "expected_mixed_sources": false,
+      "actual_mixed_sources": false,
+      "reason": "question targets local German/Germany knowledge"
+    },
+    {
+      "index": 182,
+      "message": "latest Germany travel advisory 请保持简洁。",
+      "expected": "web_search",
+      "actual": "rag",
+      "expected_mixed_sources": false,
+      "actual_mixed_sources": false,
+      "reason": "question targets local German/Germany knowledge"
+    },
+    {
+      "index": 183,
+      "message": "latest Germany travel advisory Answer for a beginner.",
+      "expected": "web_search",
+      "actual": "rag",
+      "expected_mixed_sources": false,
+      "actual_mixed_sources": false,
+      "reason": "question targets local German/Germany knowledge"
+    },
+    {
+      "index": 224,
+      "message": "用德语写一首短诗",
+      "expected": "no_tool",
+      "actual": "rag",
+      "expected_mixed_sources": false,
+      "actual_mixed_sources": false,
+      "reason": "question targets local German/Germany knowledge"
+    },
+    {
+      "index": 225,
+      "message": "用德语写一首短诗 Please be concise.",
+      "expected": "no_tool",
+      "actual": "rag",
+      "expected_mixed_sources": false,
+      "actual_mixed_sources": false,
+      "reason": "question targets local German/Germany knowledge"
+    },
+    {
+      "index": 226,
+      "message": "用德语写一首短诗 请保持简洁。",
+      "expected": "no_tool",
+      "actual": "rag",
+      "expected_mixed_sources": false,
+      "actual_mixed_sources": false,
+      "reason": "question targets local German/Germany knowledge"
+    },
+    {
+      "index": 227,
+      "message": "用德语写一首短诗 Answer for a beginner.",
+      "expected": "no_tool",
+      "actual": "rag",
+      "expected_mixed_sources": false,
+      "actual_mixed_sources": false,
+      "reason": "question targets local German/Germany knowledge"
+    },
+    {
+      "index": 292,
+      "message": "写一个学习计划，不需要查询资料",
+      "expected": "no_tool",
+      "actual": "rag",
+      "expected_mixed_sources": false,
+      "actual_mixed_sources": false,
+      "reason": "question targets local German/Germany knowledge"
+    },
+    {
+      "index": 293,
+      "message": "写一个学习计划，不需要查询资料 Please be concise.",
+      "expected": "no_tool",
+      "actual": "rag",
+      "expected_mixed_sources": false,
+      "actual_mixed_sources": false,
+      "reason": "question targets local German/Germany knowledge"
+    },
+    {
+      "index": 294,
+      "message": "写一个学习计划，不需要查询资料 请保持简洁。",
+      "expected": "no_tool",
+      "actual": "rag",
+      "expected_mixed_sources": false,
+      "actual_mixed_sources": false,
+      "reason": "question targets local German/Germany knowledge"
+    },
+    {
+      "index": 295,
+      "message": "写一个学习计划，不需要查询资料 Answer for a beginner.",
+      "expected": "no_tool",
+      "actual": "rag",
+      "expected_mixed_sources": false,
+      "actual_mixed_sources": false,
+      "reason": "question targets local German/Germany knowledge"
+    }
+  ]
+}
