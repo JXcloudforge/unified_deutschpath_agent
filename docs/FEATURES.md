@@ -20,7 +20,7 @@ on engineering candidates are not formal independent acceptance results.
 | UI | `ui/streamlit_app.py`, `ui/api_client.py` | `tests/unit/test_ui_profile.py` | IMPLEMENTED | Streamlit AppTest TESTED; real browser interaction NOT VERIFIED in this maintenance run |
 | API Settings | `ui/local_settings.py`, collapsed Streamlit expander | `tests/unit/test_local_settings.py`, `tests/unit/test_ui_profile.py` | IMPLEMENTED | Password input, local save rules, and status handling TESTED; credentials are never recorded here |
 | System information / release notes | `app/version.py`, `ui/version_info.py`, allowlisted `docs/releases/` | `tests/unit/test_version_info.py`, `tests/unit/test_ui_profile.py` | IMPLEMENTED | Version comes from pyproject metadata; local release-note panel covered by AppTest; this is documentation, not an update service |
-| Technical evolution timeline | `docs/iterations/manifest.json`, `docs/iterations/M01–M06` | `tests/unit/test_version_info.py`, `tests/unit/test_ui_profile.py` | IMPLEMENTED | Manifest validation and six collapsed milestone panels are AppTest-covered; records summarize current source and evidence |
+| Technical evolution timeline | `docs/iterations/manifest.json`, `docs/iterations/M01–M10` | `tests/unit/test_version_info.py`, `tests/unit/test_ui_profile.py` | IMPLEMENTED | Manifest validation and ten collapsed milestone panels are AppTest-covered; records summarize current source and evidence |
 
 ## Planned / blocked
 

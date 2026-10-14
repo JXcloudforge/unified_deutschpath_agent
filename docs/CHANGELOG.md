@@ -3,6 +3,13 @@
 This file records repository evidence and current working-tree state. A line
 does not imply a Git commit or release tag unless one is listed explicitly.
 
+## Maintenance — Product README and M01–M10 evolution index — 2026-10-14（预发布）
+
+- **README：** 以产品定位和四条工程演进主线介绍 Deutschpath Unified Agent；补入 M01–M10 功能、接口复用、边界 Mermaid 图、真实技术栈、本地启动、工程证据和未完成的生产门槛。软件版本仍为 `0.1.1.dev0`，不创建 `1.0.0` 发布声明。
+- **技术演进中心：** 在受控 Manifest 中增加 M07–M10 元数据和各自摘要；Streamlit 继续只读取白名单目录文档，不允许任意路径。版本面板及 AppTest 契约扩展到十项。
+- **演示：** 新增 `docs/demo/README.md` 和截图目录。发布副本目前无可核验的真实截图，因此 README 不嵌入图片；截图清单全部标记 TODO。
+- **验证：** `scripts/run_tests.ps1`：269 passed、1 skipped；版本面板定向测试 20 passed；compileall、Manifest 文档路径检查、本地 Markdown 链接检查及 `git diff --check` 通过。没有伪造截图、Commit、Tag 或 Release。
+
 ## Maintenance — M10-Auth-C Streamlit OIDC UI / API 接入 — 2026-10-13（预发布）
 
 - production Streamlit 增加原生 OIDC 登录门禁；缺少 OIDC secrets、Authlib、HTTPS redirect 或 API audience 时在受保护工作区前 fail closed。真实 IdP 尚未配置，登录未验收。

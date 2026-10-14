@@ -135,7 +135,7 @@ def _render_system_information() -> None:
         )
         release = next(item for item in releases if item["version"] == selected)
         st.markdown(str(release["markdown"]))
-        st.markdown("**技术演进 · M01–M06**")
+        st.markdown("**技术演进 · M01–M10**")
         for milestone in information["milestones"]:
             with st.expander(f"{milestone['id']} · {milestone['title']}", expanded=False):
                 st.markdown("**解决的问题**")

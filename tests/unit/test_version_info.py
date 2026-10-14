@@ -6,7 +6,7 @@ import pytest
 from ui.version_info import MANIFEST_FILE, _read_manifest, load_version_information
 
 
-def test_version_information_is_manifest_driven_and_contains_six_milestones():
+def test_version_information_is_manifest_driven_and_contains_ten_milestones():
     info = load_version_information()
     assert info["app_name"] == "Deutschpath Unified Agent"
     assert info["version"] == "v0.1.1.dev0"
@@ -14,7 +14,7 @@ def test_version_information_is_manifest_driven_and_contains_six_milestones():
     assert "Maintenance" in info["latest_summary"]
     assert "NOT VERIFIED" in info["features"]
     assert [item["version"] for item in info["releases"]] == ["0.1.1.dev0", "0.1.0-beta.1"]
-    assert [item["id"] for item in info["milestones"]] == [f"M0{i}" for i in range(1, 7)]
+    assert [item["id"] for item in info["milestones"]] == [f"M{i:02d}" for i in range(1, 11)]
     assert MANIFEST_FILE == "docs/iterations/manifest.json"
     assert all(item["features"] and item["technology"] and item["chain"] and item["problem"]
                for item in info["milestones"])

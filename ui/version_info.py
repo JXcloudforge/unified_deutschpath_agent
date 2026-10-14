@@ -49,8 +49,8 @@ def _read_manifest() -> dict[str, Any]:
         document = release["document"]
         if not document.startswith("docs/releases/") or not document.endswith(".md") or ".." in Path(document).parts:
             raise ValueError("release document path is outside the controlled release directory")
-    if [item["id"] for item in milestones] != [f"M0{i}" for i in range(1, 7)]:
-        raise ValueError("iteration manifest must define milestones M01 through M06 in order")
+    if [item["id"] for item in milestones] != [f"M{i:02d}" for i in range(1, 11)]:
+        raise ValueError("iteration manifest must define milestones M01 through M10 in order")
     if len({item["version"] for item in releases}) != len(releases):
         raise ValueError("iteration manifest contains duplicate release versions")
     return payload

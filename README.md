@@ -1,133 +1,172 @@
 # Deutschpath Unified Agent
 
-面向德语学习者的模块化对话 Agent。当前发布候选版本为 `0.1.1.dev0`；阶段四工程已实现 M07 会话历史、有限范围的 M08 编排、可选 M09 后续问题建议，并完成 M10 本地集成回归。它仍是本地/开发候选版本，尚未完成公网 OIDC、双用户生产隔离、容器部署与恢复验收，不应作为已验收的 v1.0 公网服务部署。
+**v1.0 功能集成预览版 — 面向德语学习场景的模块化 AI Agent**
+当前为 v1.0 功能集成预览版，生产发布验收仍在推进。软件版本为 `0.1.1.dev0`。
 
-## 产品功能与技术栈
+Deutschpath Unified Agent 面向德语学习和德国信息需求，将对话管理、学习者画像、文档检索、意图路由、联网搜索、MCP 工具、上下文记忆与受控多轮任务编排集成到一个应用中。模块通过明确的 Command / Query 和 Provider 接口协作，便于独立测试与替换。
 
-- FastAPI 提供 Chat、会话、附件、用户状态、身份验证及健康检查 API；默认开发端口为 `8765`。
-- Streamlit 提供 ChatWorkspace、登录接线和版本中心；默认本机端口为 `8501`。真实 OIDC Provider 未配置。
-- Python `>=3.14,<3.15`；FastAPI/Uvicorn；Streamlit；SQLite；ChromaDB；MCP Python SDK；RapidOCR/ONNX Runtime。依赖范围见 `pyproject.toml`；当前仓库没有完整 lockfile。
-- LLM 可选接 DeepSeek；离线测试使用 FakeLLM。联网搜索可选接 Tavily；未进行实时连接测试时不能将答案描述为实时联网结果。
-- TXT、MD、PDF、DOCX 文本解析和 Chroma RAG；扫描版 PDF 的通用 OCR 解析不在普通文件路径中。
-- MCP Database/OCR 经本机 stdio Host 调用。写入需经过预览、用户确认和读回；目前不提供公网 MCP endpoint。
+项目从一个可测试的 Agent 核心逐步发展为本地聊天产品、文件知识系统、工具集成及有界任务工作流。它目前是本机功能集成预览，不能视为已完成公网生产验收的 v1.0 服务。
 
-## 阶段四功能
+## Product Overview
 
-### M07 — 对话历史与上下文
+- 与德语学习者对话，并在回答中使用 CEFR 学习档案、目标和偏好。
+- 上传 TXT、Markdown、PDF、DOCX 学习资料，以会话隔离的 RAG 检索资料。
+- Router 在 `rag`、`web_search`、`no_tool` 三类路径中选择；`mixed_sources` 是额外的证据选项。
+- Tavily 和 DeepSeek 通过独立 Provider Adapter 接入；未配置或未实测时，应用不会将其描述为实时服务成功。
+- OCR 与业务 SQLite 访问通过 MCP Host 及 stdio Server 隔离。数据库写入需用户检查和确认，并执行查询验证。
+- SQLite Repository、Chroma 向量存储和稳定 API 契约将 UI、业务规则和数据访问分开。
 
-Conversation 通过 `ConversationCommands` / `ConversationQueries` 管理会话、消息、附件元数据、会话改名及只读上下文快照。历史持久化于 SQLite，可在服务重启后恢复；上下文最多携带最近 20 条消息和 12,000 字符。该字符上限不是精确 token 预算，也没有持久化对话摘要。资源归属由可信业务边界检查；当前本地开发 `X-User-ID` 不等于用户认证。
+## Demo
 
-### M08 — 意图引导与有限编排
+本发布副本当前没有可核验的真实产品截图，因此本页不嵌入占位图片。截图采集清单、每张图的准备步骤和验收条件见 [产品演示材料](docs/demo/README.md)。已记录的本机功能测试见 [工程质量](#engineering-quality)。
 
-M08 复用现有 IntentRouter、Conversation Command/Query 与独立编排状态。已验证范围是 `rename_session → list_sessions` 的固定双步骤流程，含澄清、提案确认、重复确认保护及本机重启恢复。它**不是**通用任务规划器：不支持任意复杂任务分解、CRM 写入型任务或任意工具编排；公网环境写入路径关闭。
+## Core Capabilities
 
-### M09 — 后续问题建议
+| 能力 | 模块边界 | 当前状态 |
+|---|---|---|
+| 对话与会话 | Streamlit ChatWorkspace → API Client → FastAPI → Conversation Commands/Queries | 本机实现并测试；真实 OIDC 双用户公网验收未完成 |
+| 学习者状态 | UserState Service / Repository / SQLite | CEFR 等级、目标、偏好及学习事件已实现 |
+| 文件与 RAG | FileService → Parser → RAGService → Chroma | TXT/MD/PDF/DOCX、本地检索和会话 namespace 已实现 |
+| 路由与 Web | Rule/LLM/Hybrid Router、QueryGuard、Tavily Adapter | 模块和离线测试已实现；独立 150 条 Router 指标未验证，当前 README 引用的发布副本报告未执行实时 Provider 测试 |
+| MCP 工具 | Host → OCR / Database MCP stdio | 本机协议和确认写入闭环有验收记录；Inspector GUI 未验证 |
+| 记忆与编排 | Conversation Queries、M08 Orchestration、M09 Suggestions | 会话历史恢复、受限双步骤流程、可选只读建议已实现并有本机验收记录 |
+| 身份与部署 | Auth Actor Boundary、Streamlit OIDC 接线、Compose/Caddy 草案 | 离线/本地边界有测试；真实 IdP、公网双账号、容器部署与恢复演练未验证 |
 
-只读确定性建议服务最多给出 3 个问题，默认关闭。开启后，用户点击建议只会把问题填入输入框，是否发送仍由用户决定；不自动触发写操作。
+状态依据和逐功能测试入口见 [发布范围与门槛](docs/V1_RELEASE_SCOPE.md)、[模块边界](docs/architecture/MODULE_BOUNDARIES.md) 和 [公开契约](docs/architecture/PUBLIC_CONTRACTS.md)。
 
-### M10 — 集成与验收
-
-集成覆盖 Chat/API、Router、RAG、Conversation、M08、M09、MCP/OCR 与文件解析。发布副本回归结果及真实运行范围见 [阶段四提交与截图指南](docs/submission/stage4/README.md) 和 [M10 验收记录](docs/PHASE4_M10_ACCEPTANCE.md)。自动化测试不等于公网生产验收；真实 OIDC、双真实账号、Router 150 题人工冻结、DeepSeek/Tavily 真实连接、MCP Inspector GUI 与生产部署/恢复均未完成。
-
-## 架构与公开接口
-
-模块遵循“业务模块自身 + Command API + Query API”：业务模块拥有自己的规则、状态、Repository 与事务，消费者只依赖稳定服务契约/DTO；FastAPI 负责 HTTP 适配、可信 Actor 注入和组合装配，不直接跨模块访问 Repository/ORM。ChatWorkspace 通过 `Stage2ApiClient` 访问 FastAPI。
+## Architecture
 
 ```mermaid
 flowchart LR
-  U[学习者] --> UI[Streamlit ChatWorkspace]
-  UI -->|HTTP / Bearer| API[FastAPI]
-  API --> AUTH[Auth: Access Token 验证与 Actor]
-  API --> CHAT[Conversation Commands / Queries]
-  CHAT --> DB[(模块自有 SQLite 状态)]
-  CHAT --> M08[M08 有界编排]
-  M08 -->|Command / Query| CHAT
-  CHAT --> ROUTER{IntentRouter}
-  ROUTER -->|rag| RAG[RAG Query / Chroma]
-  ROUTER -->|web_search| WEB[Tavily Adapter 可选]
-  ROUTER -->|no_tool| CTX[受限上下文]
-  RAG --> LLM[DeepSeek Adapter 或 FakeLLM]
-  WEB --> LLM
-  CTX --> LLM
-  LLM --> CHAT
-  CHAT --> M09[M09 可选只读建议]
-  API --> MCP[MCP Host / stdio OCR 与 Database]
+  User[User] --> UI[Streamlit ChatWorkspace]
+  UI --> Client[Stage2ApiClient]
+  Client --> API[FastAPI]
+  API --> Auth[Auth Actor boundary<br/>production OIDC not verified]
+  Auth --> Conversation[Conversation Commands / Queries]
+  Auth --> State[UserState Commands / Queries]
+  Conversation --> Agent[Unified Agent]
+  State --> Agent
+  Agent --> Router{IntentRouter}
+  Router -->|rag| RAG[RAGService]
+  Router -->|web_search| Guard[QueryGuard / Tavily Adapter]
+  Router -->|no_tool| Direct[Direct Context]
+  RAG --> Evidence[EvidenceAggregator / ContextBuilder]
+  Guard --> Evidence
+  Direct --> Evidence
+  Evidence --> LLM[DeepSeek Adapter or FakeLLM]
+  LLM --> Conversation
+  Conversation --> Suggestions[M09 read-only suggestions]
+
+  API -. opt-in bounded workflow .-> M08[M08 Orchestration Commands / Queries]
+  M08 -->|allowlisted Conversation Command / Query| Conversation
+  API -. authorized tool workflow .-> Host[MCP Host]
+  Host -->|stdio| OCR[OCR MCP Server]
+  Host -->|stdio| DB[Database MCP Server]
+
+  Conversation --> ChatDB[(Conversation SQLite)]
+  Auth --> AuthDB[(Auth identity SQLite)]
+  State --> StateDB[(UserState SQLite)]
+  RAG --> Chroma[(Chroma: owned by RAG)]
+  M08 --> M08DB[(Orchestration SQLite)]
+  DB --> BusinessDB[(MCP business SQLite)]
 ```
 
-边界细节见 [模块边界](docs/architecture/MODULE_BOUNDARIES.md)、[公开契约](docs/architecture/PUBLIC_CONTRACTS.md)、[M08 编排](docs/architecture/M08_ORCHESTRATION.md)。
+**High Cohesion + Low Coupling + Stable Contracts + Testability**
 
-## Windows 本地安装与启动
+The UI uses the API Client and does not query business databases. Each module owns its Repository and SQLite state; RAG alone owns Chroma. M08 currently executes only a bounded `rename_session → list_sessions` workflow after confirmation. MCP is a separate Host capability, not a fourth Router class. There is no global transaction across module databases. The diagram does not imply verified production authentication.
 
-要求 Windows PowerShell 和 Python 3.14。进入本仓库根目录：
+More detail: [Architecture overview](ARCHITECTURE.md), [Module boundaries](docs/architecture/MODULE_BOUNDARIES.md), [Public contracts](docs/architecture/PUBLIC_CONTRACTS.md), [M08 workflow](docs/architecture/M08_ORCHESTRATION.md).
+
+## Evolution Roadmap
+
+The ten milestones follow four engineering tracks. Each iteration builds on existing service boundaries and introduces only the interfaces needed by the next capability.
+
+| Milestone | Product capability and problem solved | Reuse and interface evolution | Evidence / status |
+|---|---|---|---|
+| **Agent Foundation · M01–M02** ||||
+| M01 | A single testable answer path instead of scattered model calls | `LLMClient`, `FakeLLM`, `DeepSeekLLM`; `UnifiedOrchestrator.answer` | Offline Agent/RAG integration tests; real provider is separately configured |
+| M02 | Persistent learner context across requests | Reuses Agent context; adds `UserStateService` and Repository Commands/Queries for CEFR profile/events | Isolated SQLite unit and HTTP acceptance in `docs/iterations/M02_crm_state.md` |
+| **Application & Knowledge · M03–M04** ||||
+| M03 | A usable chat UI with durable sessions and one HTTP boundary | Adds Streamlit ChatWorkspace, `Stage2ApiClient`, FastAPI, `ChatService`, Conversation history | AppTest and loopback API acceptance; production identity is a separate gate |
+| M04 | Searchable learning materials without coupling parsers to prompts | Adds `FileService` Parser Registry, `RAGService`, embedding Protocol and `ChromaVectorStore` namespaces | Parser, session isolation, RAG and lifecycle tests |
+| **Routing & Tools · M05–M06** ||||
+| M05 | Select local retrieval, public search, or direct response while keeping evidence distinct | Reuses Agent/LLM; adds three-class `IntentRouter`, separate `mixed_sources`, guarded `WebSearchProvider`, `EvidenceAggregator` | Offline routing/security suite; independent 150-label 98% result remains NOT VERIFIED |
+| M06 | Add protocol-isolated OCR and database actions with reviewed writes | Adds MCP stdio Servers and `MCPHost` / Planner; writes require reviewed rows and confirmation | MCP protocol and isolated OCR→confirm→query HTTP evidence; Inspector GUI not verified |
+| **Memory & Orchestration · M07–M10** ||||
+| M07 | Give Conversation sole ownership of session commands, queries and bounded history | Reuses `ChatService`/SQLite; formalizes `ConversationCommands`, `ConversationQueries`, immutable DTOs and context snapshot | Compatibility, ownership, history and restart tests; 20-message / 12,000-character bounds |
+| M08 | Safely handle one confirmed multi-step conversation task | Reuses Router and Conversation APIs; adds independent orchestration state and executor boundary for `rename_session → list_sessions` | Loopback HTTP, restart, duplicate-confirmation and result read-back evidence; not a general Planner |
+| M09 | Offer optional next questions without writing state or sending automatically | Reuses Conversation snapshot and optional M08 Query; adds `FollowUpSuggestionService` read-only Query | HTTP/AppTest evidence; default off, up to 3 deterministic suggestions, click only prefills input |
+| M10 | Consolidate integration evidence and establish a production release boundary | Reuses all modules; adds Auth token/Actor boundary and deployment drafts, without changing module ownership | Local regression/API evidence exists; real OIDC, two real accounts, independent Router, public deployment and recovery remain unverified |
+
+Detailed per-milestone problem statements, contracts, implementations and limits: [M01–M10 iteration notes](docs/iterations/manifest.json). The manifest used by the local version panel lists M01–M10.
+
+## Tech Stack
+
+| Technology | Role |
+|---|---|
+| Python 3.14 | Application runtime (`pyproject.toml`: `>=3.14,<3.15`) |
+| FastAPI / Uvicorn | HTTP contracts, validation, composition root, local API |
+| Streamlit | ChatWorkspace and local system/version panels |
+| SQLite | Module-owned persistence through Repository boundaries; no cross-module global transaction |
+| ChromaDB | Vector storage owned and accessed by RAG |
+| DeepSeek-compatible HTTP adapter / FakeLLM | Optional real LLM provider and deterministic offline tests |
+| Tavily adapter | Optional public Web Search; key presence alone is not connectivity evidence |
+| MCP Python SDK `1.30.0` | Standards-based stdio Database and OCR Servers |
+| RapidOCR `3.10.0` / ONNX Runtime | CPU OCR engine and runtime |
+| pytest / HTTPX | Unit, integration, API contract and local HTTP acceptance |
+| Docker Compose / Caddy | Deployment drafts only; no verified public deployment |
+
+Exact dependency ranges: [`pyproject.toml`](pyproject.toml). Current versions and lifecycle notes: [Technology stack](docs/TECH_STACK.md).
+
+## Quick Start
+
+Requirements: Windows PowerShell and Python 3.14. Run these commands from the repository root:
 
 ```powershell
-cd .\Deutschpath_agent_publish
 py -3.14 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install --upgrade pip
 .\.venv\Scripts\python.exe -m pip install -e ".[dev]"
 Copy-Item .env.example .env
 ```
 
-`.env.example` 默认没有真实密钥，空的 `DEEPSEEK_API_KEY` 使用离线 FakeLLM；`TAVILY_API_KEY` 为空时不应声称实时联网。启动两个本地服务并打开浏览器：
+Add provider credentials locally to `.env` only if needed. Do not commit `.env`. Start the local backend and UI:
 
 ```powershell
 .\scripts\start_app.ps1
 ```
 
-API：`http://127.0.0.1:8765/health`；Streamlit：`http://127.0.0.1:8501`。默认只绑定 loopback。关闭时分别在 FastAPI 与 Streamlit 窗口按 `Ctrl+C`，先停 UI 再停 API。启动脚本检测端口服务身份，不会擅自复用或关闭其他程序。
+The defaults are FastAPI `http://127.0.0.1:8765` and Streamlit `http://127.0.0.1:8501`. The app binds to loopback. `8000` is not used by this project. Stop each process with `Ctrl+C` in its own window.
 
-M08 写入仅用于本地开发演示。启用前在本机 `.env` 明确设置 `APP_ENV=development`、`M08_LOCAL_ENABLED=true`，服务仍要求直接 loopback 请求；公网/production 不开放此实验写入。不要把个人 `.env`、`.streamlit/secrets.toml` 或密钥提交到 Git。
+## Engineering Quality
 
-## 测试与验收命令
+The following evidence was recorded in this local publish clone on 2026-10-14:
 
-```powershell
-.\scripts\run_tests.ps1
-.\.venv\Scripts\python.exe -m pytest tests\integration\test_api_smoke.py -q
-.\.venv\Scripts\python.exe scripts\m08_b_http_acceptance.py
-.\.venv\Scripts\python.exe scripts\m08_c_http_acceptance.py
-.\.venv\Scripts\python.exe scripts\m09_http_acceptance.py
-.\.venv\Scripts\python.exe scripts\mcp_b6_http_acceptance.py
-.\.venv\Scripts\python.exe -m compileall -q app ui scripts tests
-git diff --check
-```
-
-Router 离线评估使用 Rules 开发集（不是 150 题人工独立验收）：
-
-```powershell
-.\.venv\Scripts\python.exe scripts\evaluate_intents_v2.py --router rules
-```
-
-`verify_tavily_live.py` 和 Hybrid Router 可能调用真实 Provider 并产生费用；仅在获得授权并配置凭据后运行。未完成人工标注和冻结前，不报告 Router 150 题独立准确率。
-
-## 本次发布副本测试证据
-
-2026-10-14 在 `Deutschpath_agent_publish` 独立 Git clone 中验证：
-
-| 命令 / 操作 | 结果 | 限定 |
+| Check | Result | Scope |
 |---|---|---|
-| `scripts/run_tests.ps1` | **269 passed, 1 skipped, 0 failed**；83.27 秒；2 条依赖弃用警告；exit 0 | 本地 `.venv` 是本次按 `--system-site-packages` 创建并对发布副本执行 `pip install -e ".[dev]"` 的验证环境；不是完全隔离的依赖镜像。唯一 skip 是当前 Windows 账户无法创建 OCR 测试 symlink |
-| `python -m pytest tests\integration\test_api_smoke.py -q` | **1 passed**；2 条依赖弃用警告；exit 0 | 单独运行；没有计入上面的全量测试统计 |
-| `scripts/m08_b_http_acceptance.py` | **PASS，exit 0**；loopback Uvicorn；普通 Chat、澄清、重启后确认、重复确认、跨用户拒绝、未支持写操作拒绝；目标标题 Query 读回正确 | 本机隔离数据库；不是公网 OIDC 认证 |
-| `scripts/m08_c_http_acceptance.py` | **PASS，exit 0**；`rename_session` 与 `list_sessions` 均 SUCCEEDED；重复确认不重复执行；标题读回正确 | 固定两步骤，不是通用规划器 |
-| `scripts/m09_http_acceptance.py` | **PASS，exit 0**；opt-in 返回 3 条 Ausbildung 建议、旧响应兼容、跨用户 404 | 使用本地服务/离线策略；建议只预填输入框 |
-| `scripts/mcp_b6_http_acceptance.py` | **PASS，exit 0**；真实 loopback Uvicorn 与 stdio MCP；确认前 0 行、确认后插入并读回 3 行、跨用户 404、正常关闭 | 不代表 MCP Inspector GUI 或公网 MCP 验收 |
-| `scripts/start_app.ps1 -CheckOnly` | **PASS，exit 0**；API/UI 依赖和版本可导入，端口可用 | 只执行启动前检查；本轮未打开 UI 浏览器窗口 |
-| `python -m compileall -q app ui scripts tests`；`git diff --check`；`git diff --cached --check` | 均 **PASS，exit 0** | Git 对现有 CRLF 转换有提示；无 whitespace error |
-| `scripts/evaluate_intents.py` | **18/18（100%）** | 18 条离线小样本，不是 300 开发集或 150 题人工独立验收 |
+| `scripts/run_tests.ps1` | **269 passed, 1 skipped, 0 failed** | Isolated local pytest; one skip because the Windows account cannot create the OCR symlink fixture |
+| API Smoke | **1 passed** | Separate local API smoke test, not included in the count above |
+| M08-B / M08-C HTTP | **PASS** | Loopback Uvicorn; bounded confirmation, restart and Command/Query read-back |
+| M09 HTTP | **PASS** | Loopback Uvicorn; optional suggestions and compatibility behavior |
+| MCP B6 HTTP | **PASS** | Loopback Uvicorn + stdio MCP; confirmation-gated write and query verification |
+| `compileall`, `git diff --check` | **PASS** | Local source and documentation checks |
 
-运行回归的解释器来自本次副本的 `.venv`；该环境为本次临时创建用于验证，`.venv` 被 `.gitignore` 排除且不会提交。完整 fresh isolated environment / Docker build 尚未验证。通过本机自动测试不表示真实 OIDC、公网服务或真实 DeepSeek/Tavily 验收通过。
+These are local release-copy results, not public deployment results. They do not prove real OIDC, public two-account isolation, Router 98% independent accuracy, real DeepSeek/Tavily connectivity, MCP Inspector GUI, or production recovery.
 
-## 课程第四阶段证据
+The Router's 300-case engineering candidate score is not independent ground truth. The 150-case human worksheet remains unreviewed. See [M10 acceptance](docs/PHASE4_M10_ACCEPTANCE.md) and [release blockers](docs/RELEASE_BLOCKERS.md).
 
-`docs/submission/stage3/` 保留阶段三验收材料；`docs/submission/stage4/README.md` 提供阶段四演示顺序、截图文件命名、服务启动步骤和架构图。当前没有伪造或预制的运行截图。需要提交可视证据时，按指南实际启动应用和测试后截图；只截图不含密钥、私人附件或真实用户会话的临时演示数据。
+## Development Status & Roadmap
 
-## 已知限制与未完成事项
+**Available in the local integration preview:** Chat, learner state, file parsing/RAG, three-class routing, guarded Web Search adapter, mixed evidence, MCP OCR/database confirmation workflow, Conversation history, bounded M08 demo, optional M09 suggestions.
 
-- 真实 OIDC Provider、面向 API 的 Access Token audience、双真实账号公网资源隔离、浏览器 Cookie/CSRF/登出策略尚未验收；`X-User-ID` 仅是开发分区标识。
-- Docker Compose 与 Caddy 尚未完成真实 HTTPS、WebSocket、限流、上传限制、监控和恢复演练；不应向公网开放。
-- DeepSeek/Tavily 实时请求需另行授权和留存脱敏证据；MCP Inspector GUI 尚未验收。
-- Router 人工独立集仍未审阅/冻结。工具依赖空白工作表运行，但不得用开发集结果冒充人工真值。
-- SQLite/Chroma 目前按单实例本机/单机方案设计；不承诺多 API 副本写一致性或跨模块 exactly-once。
-- 依赖范围未锁定到完整 lockfile/镜像 digest；Windows symlink 环境仍有一个被跳过的测试。
+**Work before a production release:** configure and test a real OIDC provider; verify two real accounts across all private resources; freeze and independently evaluate human Router labels; run real provider acceptance in the release environment; validate MCP Inspector; complete container/HTTPS, limits, monitoring, backup and recovery exercises. M08 remains a fixed example flow, not a general-purpose task planner.
 
-公网范围、技术路线和 release blockers 见 [v1.0 范围冻结](docs/V1_RELEASE_SCOPE.md)、[发布清单](docs/RELEASE_CHECKLIST.md) 与 [发布阻塞项](docs/RELEASE_BLOCKERS.md)。应用版本仍为 `0.1.1.dev0`。
+The package version remains `0.1.1.dev0`; “v1.0 feature integration preview” describes the integrated feature scope, not a released `1.0.0` build. No `1.0.0` tag or release is implied.
+
+## Documentation
+
+- [Product demos and screenshot checklist](docs/demo/README.md)
+- [Architecture](ARCHITECTURE.md) · [Module boundaries](docs/architecture/MODULE_BOUNDARIES.md) · [Public contracts](docs/architecture/PUBLIC_CONTRACTS.md)
+- [M01–M10 iteration manifest](docs/iterations/manifest.json) · [M08 orchestration](docs/architecture/M08_ORCHESTRATION.md) · [M09 suggestions](docs/architecture/M09_SUGGESTIONS.md)
+- [Release scope](docs/V1_RELEASE_SCOPE.md) · [Release checklist](docs/RELEASE_CHECKLIST.md) · [Release blockers](docs/RELEASE_BLOCKERS.md)
+- [Stage 3 evidence](docs/submission/stage3/STAGE3_ACCEPTANCE.md) · [Stage 4 evidence](docs/submission/stage4/README.md)
+- [Debugging guide](docs/DEBUGGING.md) · [Changelog](docs/CHANGELOG.md) · [Technology stack](docs/TECH_STACK.md)

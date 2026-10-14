@@ -253,7 +253,7 @@ def test_system_information_panel_shows_current_version_and_release_history(ui_b
                for item in visible_text)
     assert app.selectbox(key="version_history_selector").options == ["0.1.1.dev0", "0.1.0-beta.1"]
     milestone_labels = [item.label for item in app.expander]
-    assert all(any(label.startswith(f"M0{number} ·") for label in milestone_labels) for number in range(1, 7))
+    assert all(any(label.startswith(f"M{number:02d} ·") for label in milestone_labels) for number in range(1, 11))
     assert any("M06" in item.value for item in app.markdown)
     app.selectbox(key="version_history_selector").select("0.1.0-beta.1").run()
     assert not app.exception

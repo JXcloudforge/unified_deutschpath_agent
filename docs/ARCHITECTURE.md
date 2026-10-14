@@ -2,7 +2,7 @@
 
 This document describes the active root application. The controlled evolution
 timeline is in [`iterations/manifest.json`](iterations/manifest.json), with
-one evidence-oriented record for each milestone M01–M06. The Streamlit version
+one evidence-oriented record for each milestone M01–M10. The Streamlit version
 panel reads those repository-owned records and release documents; the JSON is
 not an update feed and cannot load user-selected paths.
 
