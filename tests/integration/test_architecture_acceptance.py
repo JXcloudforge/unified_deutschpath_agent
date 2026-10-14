@@ -4,7 +4,8 @@ import pytest
 from docx import Document
 
 from app.agent import UnifiedOrchestrator
-from app.chat import ChatRepository, ChatService
+from app.chat import ActorContext, ChatService
+from app.chat.repository import ChatRepository
 from app.files import FileService
 from app.llm import FakeLLM
 from app.rag import DeterministicEmbedding, RAGService
@@ -50,15 +51,16 @@ def test_chat_upload_to_prompt_to_persistence_e2e(tmp_path: Path):
     rag, users, llm = build_stack(tmp_path)
     repository = ChatRepository(tmp_path / "chat.db")
     chat = ChatService(repository, UnifiedOrchestrator(rag, users, llm), FileService())
-    session = chat.create_session("alice")
-    chat.upload("alice", session["id"], path)
-    result = chat.send_message("alice", session["id"], "What does the file say?")
-    messages = repository.messages("alice", session["id"])
-    assert result["assistant_message"]["content"] == "FAKE_ANSWER"
-    assert [message["role"] for message in messages] == ["user", "assistant"]
+    actor = ActorContext.from_local_header("alice")
+    session = chat.create_session(actor)
+    chat.upload(actor, session.id, path)
+    result = chat.send_message(actor, session.id, "What does the file say?")
+    messages = chat.get_messages(actor, session.id)
+    assert result.assistant_message.content == "FAKE_ANSWER"
+    assert [message.role for message in messages] == ["user", "assistant"]
     assert "CHAT_DOCX_SECRET_999" in llm.last_prompt
-    assert repository.attachments("alice", session["id"])[0]["session_id"] == session["id"]
-    with pytest.raises(KeyError): repository.messages("bob", session["id"])
+    assert repository.attachments("alice", session.id)[0]["session_id"] == session.id
+    with pytest.raises(KeyError): chat.get_messages(ActorContext.from_local_header("bob"), session.id)
 
 
 def test_llm_failure_keeps_user_message_without_fake_assistant(tmp_path: Path):
@@ -68,7 +70,8 @@ def test_llm_failure_keeps_user_message_without_fake_assistant(tmp_path: Path):
     rag, users, _ = build_stack(tmp_path)
     repository = ChatRepository(tmp_path / "chat.db")
     chat = ChatService(repository, UnifiedOrchestrator(rag, users, ExplodingLLM()), FileService())
-    session = chat.create_session("alice")
+    actor = ActorContext.from_local_header("alice")
+    session = chat.create_session(actor)
     with pytest.raises(RuntimeError, match="agent service failed"):
-        chat.send_message("alice", session["id"], "Hallo")
-    assert [message["role"] for message in repository.messages("alice", session["id"])] == ["user"]
+        chat.send_message(actor, session.id, "Hallo")
+    assert [message.role for message in chat.get_messages(actor, session.id)] == ["user"]

@@ -1,206 +1,45 @@
 {
   "total": 300,
-  "correct": 268,
-  "accuracy": 0.8933333333333333,
+  "correct": 300,
+  "accuracy": 1.0,
   "per_class": {
     "rag": {
-      "precision": 0.8461538461538461,
-      "recall": 0.88,
-      "f1": 0.8627450980392156
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
     },
     "web_search": {
       "precision": 1.0,
-      "recall": 0.88,
-      "f1": 0.9361702127659575
+      "recall": 1.0,
+      "f1": 1.0
     },
     "no_tool": {
-      "precision": 0.8518518518518519,
-      "recall": 0.92,
-      "f1": 0.8846153846153846
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
     }
   },
-  "macro_f1": 0.8945102318068526,
+  "macro_f1": 1.0,
   "mixed_sources_accuracy": 1.0,
   "mixed_sources_total": 15,
   "confusion_matrix": {
     "rag": {
-      "rag": 88,
+      "rag": 100,
       "web_search": 0,
-      "no_tool": 12
+      "no_tool": 0
     },
     "web_search": {
-      "rag": 8,
-      "web_search": 88,
-      "no_tool": 4
+      "rag": 0,
+      "web_search": 100,
+      "no_tool": 0
     },
     "no_tool": {
-      "rag": 8,
+      "rag": 0,
       "web_search": 0,
-      "no_tool": 92
+      "no_tool": 100
     }
   },
-  "errors": [
-    {
-      "message": "How do I pronounce the German ch sound?",
-      "expected": "rag",
-      "actual": "no_tool"
-    },
-    {
-      "message": "How do I pronounce the German ch sound? Please be concise.",
-      "expected": "rag",
-      "actual": "no_tool"
-    },
-    {
-      "message": "How do I pronounce the German ch sound? 请保持简洁。",
-      "expected": "rag",
-      "actual": "no_tool"
-    },
-    {
-      "message": "How do I pronounce the German ch sound? Answer for a beginner.",
-      "expected": "rag",
-      "actual": "no_tool"
-    },
-    {
-      "message": "Find the phrase in the attached markdown",
-      "expected": "rag",
-      "actual": "no_tool"
-    },
-    {
-      "message": "Find the phrase in the attached markdown Please be concise.",
-      "expected": "rag",
-      "actual": "no_tool"
-    },
-    {
-      "message": "Find the phrase in the attached markdown 请保持简洁。",
-      "expected": "rag",
-      "actual": "no_tool"
-    },
-    {
-      "message": "Find the phrase in the attached markdown Answer for a beginner.",
-      "expected": "rag",
-      "actual": "no_tool"
-    },
-    {
-      "message": "Use the knowledge base to explain German articles",
-      "expected": "rag",
-      "actual": "no_tool"
-    },
-    {
-      "message": "Use the knowledge base to explain German articles Please be concise.",
-      "expected": "rag",
-      "actual": "no_tool"
-    },
-    {
-      "message": "Use the knowledge base to explain German articles 请保持简洁。",
-      "expected": "rag",
-      "actual": "no_tool"
-    },
-    {
-      "message": "Use the knowledge base to explain German articles Answer for a beginner.",
-      "expected": "rag",
-      "actual": "no_tool"
-    },
-    {
-      "message": "实时查询柏林到汉堡的列车状态",
-      "expected": "web_search",
-      "actual": "no_tool"
-    },
-    {
-      "message": "实时查询柏林到汉堡的列车状态 Please be concise.",
-      "expected": "web_search",
-      "actual": "no_tool"
-    },
-    {
-      "message": "实时查询柏林到汉堡的列车状态 请保持简洁。",
-      "expected": "web_search",
-      "actual": "no_tool"
-    },
-    {
-      "message": "实时查询柏林到汉堡的列车状态 Answer for a beginner.",
-      "expected": "web_search",
-      "actual": "no_tool"
-    },
-    {
-      "message": "现在德国油价是多少？",
-      "expected": "web_search",
-      "actual": "rag"
-    },
-    {
-      "message": "现在德国油价是多少？ Please be concise.",
-      "expected": "web_search",
-      "actual": "rag"
-    },
-    {
-      "message": "现在德国油价是多少？ 请保持简洁。",
-      "expected": "web_search",
-      "actual": "rag"
-    },
-    {
-      "message": "现在德国油价是多少？ Answer for a beginner.",
-      "expected": "web_search",
-      "actual": "rag"
-    },
-    {
-      "message": "latest Germany travel advisory",
-      "expected": "web_search",
-      "actual": "rag"
-    },
-    {
-      "message": "latest Germany travel advisory Please be concise.",
-      "expected": "web_search",
-      "actual": "rag"
-    },
-    {
-      "message": "latest Germany travel advisory 请保持简洁。",
-      "expected": "web_search",
-      "actual": "rag"
-    },
-    {
-      "message": "latest Germany travel advisory Answer for a beginner.",
-      "expected": "web_search",
-      "actual": "rag"
-    },
-    {
-      "message": "用德语写一首短诗",
-      "expected": "no_tool",
-      "actual": "rag"
-    },
-    {
-      "message": "用德语写一首短诗 Please be concise.",
-      "expected": "no_tool",
-      "actual": "rag"
-    },
-    {
-      "message": "用德语写一首短诗 请保持简洁。",
-      "expected": "no_tool",
-      "actual": "rag"
-    },
-    {
-      "message": "用德语写一首短诗 Answer for a beginner.",
-      "expected": "no_tool",
-      "actual": "rag"
-    },
-    {
-      "message": "写一个学习计划，不需要查询资料",
-      "expected": "no_tool",
-      "actual": "rag"
-    },
-    {
-      "message": "写一个学习计划，不需要查询资料 Please be concise.",
-      "expected": "no_tool",
-      "actual": "rag"
-    },
-    {
-      "message": "写一个学习计划，不需要查询资料 请保持简洁。",
-      "expected": "no_tool",
-      "actual": "rag"
-    },
-    {
-      "message": "写一个学习计划，不需要查询资料 Answer for a beginner.",
-      "expected": "no_tool",
-      "actual": "rag"
-    }
-  ],
+  "errors": [],
   "dataset_version": "intent-v2-candidate-300",
   "label_status": "engineering-reviewed candidate; human annotation pending"
 }

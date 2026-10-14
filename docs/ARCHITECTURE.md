@@ -33,10 +33,13 @@ flowchart TD
 
 ## Request flow
 
-1. Streamlit calls the FastAPI API through one configured base URL. The API
-   checks the caller-supplied local `X-User-ID` and scopes Session/CRM queries.
-2. `ChatService` reads bounded history, stores the user message, and loads the
-   Session's latest attachment when present.
+1. Streamlit ChatWorkspace calls FastAPI through `Stage2ApiClient`. The API
+   converts the required caller-supplied local `X-User-ID` to an
+   `ActorContext`. This selects a local data namespace but is not authentication.
+2. Conversation Queries verify session ownership and return immutable Session,
+   Message, or bounded ContextSnapshot DTOs. `ChatService` loads the latest
+   attachment and owns Conversation writes; API routes do not access its
+   Repository.
 3. `UnifiedOrchestrator` asks the three-class Router for `rag`, `web_search`,
    or `no_tool`. `mixed_sources` is an additional evidence choice; it is not a
    fourth intent.
@@ -51,9 +54,9 @@ flowchart TD
 
 ## State and storage boundaries
 
-- Chat Sessions, messages, attachments metadata, CRM state, and MCP Host workflow
-  state live under `STAGE2_DATA_PATH` in separate SQLite files as configured by
-  their repositories.
+- Chat Sessions/messages/attachment metadata and CRM learning state currently
+  use distinct tables in `STAGE2_DATA_PATH/stage2.db`, with separate owner
+  services and repositories. MCP Host workflow state uses its own SQLite file.
 - Chroma data uses the same root but separate knowledge/session namespaces.
 - OCR staging and MCP workflow metadata are Host-owned. MCP business records use
   a separate SQLite database and never reuse the chat/CRM database.
@@ -66,8 +69,10 @@ deployment.
 
 ## Module boundaries
 
-- **State:** ChatRepository stores sessions/messages; UserStateRepository stores
-  learner profiles/events. Local data lives beneath `STAGE2_DATA_PATH`.
+- **State:** Conversation Commands/Queries mediate ChatService operations;
+  ChatRepository owns sessions/messages/attachment metadata internally.
+  UserStateRepository owns learner profiles/events. Both currently use the
+  `stage2.db` file but remain separate business modules.
 - **Reasoning:** UnifiedOrchestrator asks the Stage 3 Router for one of three
   intents (`rag`, `web_search`, `no_tool`). `mixed_sources` is evidence metadata,
   not an additional intent.

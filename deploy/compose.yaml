@@ -1,0 +1,76 @@
+services:
+  api:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    command: ["python", "-m", "uvicorn", "app.api.main:app", "--host", "0.0.0.0", "--port", "8765"]
+    environment:
+      APP_ENV: production
+      STAGE2_DATA_PATH: /data
+      M08_LOCAL_ENABLED: "false"
+      OIDC_ISSUER: ${OIDC_ISSUER:?set OIDC_ISSUER}
+      OIDC_AUDIENCE: ${OIDC_AUDIENCE:?set OIDC_AUDIENCE}
+      OIDC_JWKS_URL: ${OIDC_JWKS_URL:?set OIDC_JWKS_URL}
+      AUTH_DATABASE_PATH: /data/identity.sqlite3
+    volumes:
+      - deutschpath_data:/data
+    expose:
+      - "8765"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8765/health', timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    networks: [backend]
+
+  streamlit:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    command: ["python", "-m", "streamlit", "run", "ui/streamlit_app.py", "--server.address", "0.0.0.0", "--server.port", "8501", "--server.headless", "true"]
+    environment:
+      DEUTSCHPATH_API_BASE_URL: http://api:8765
+      DEUTSCHPATH_LOCAL_SETTINGS_ENABLED: "0"
+    volumes:
+      - ${STREAMLIT_SECRETS_FILE:?set STREAMLIT_SECRETS_FILE}:/app/.streamlit/secrets.toml:ro
+    expose:
+      - "8501"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8501/_stcore/health', timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+    networks: [edge, backend]
+
+  caddy:
+    image: caddy:2.10
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN:?set APP_DOMAIN}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      streamlit:
+        condition: service_healthy
+    restart: unless-stopped
+    networks: [edge]
+
+networks:
+  edge: {}
+  backend:
+    driver: bridge
+
+volumes:
+  deutschpath_data: {}
+  caddy_data: {}
+  caddy_config: {}

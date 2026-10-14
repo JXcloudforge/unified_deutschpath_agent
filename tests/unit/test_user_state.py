@@ -21,6 +21,13 @@ def test_unknown_user_retains_empty_state_contract(users):
     assert users.list_learning_events("missing") == []
 
 
+def test_service_factory_owns_repository_construction(tmp_path: Path):
+    service = UserStateService.from_path(tmp_path / "factory.db")
+    saved = service.update_user_state("alice", current_level="A1")
+    reopened = UserStateService.from_path(tmp_path / "factory.db")
+    assert reopened.get_user_state("alice") == saved
+
+
 def test_profile_fields_can_be_updated_independently(users):
     assert users.update_user_level("alice", " a1 ").current_level == "A1"
     assert users.update_target_level("alice", " b1 ").target_level == "B1"

@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from .models import LearningEvent, LearningEventIn, ProfileUpdate, UserState
 from .repository import UserStateRepository
 
@@ -5,6 +7,11 @@ from .repository import UserStateRepository
 class UserStateService:
     def __init__(self, repository: UserStateRepository) -> None:
         self.repository = repository
+
+    @classmethod
+    def from_path(cls, path: str | Path) -> "UserStateService":
+        """Build the module's SQLite-backed service without exposing storage setup to callers."""
+        return cls(UserStateRepository(path))
 
     def get_user_state(self, user_id: str) -> UserState:
         _require_user_id(user_id)

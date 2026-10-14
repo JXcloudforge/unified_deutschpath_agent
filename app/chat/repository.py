@@ -60,13 +60,15 @@ class ChatRepository:
             raise KeyError("Session not found")
         return self.get_session(user_id, session_id)
 
-    def add_message(self, user_id: str, session_id: str, role: str, content: str) -> dict:
+    def add_message(self, user_id: str, session_id: str, role: str, content: str,
+                    *, preserve_session_title: bool = False) -> dict:
         self.get_session(user_id, session_id)
         with self._connection() as conn:
             sequence = conn.execute("SELECT COALESCE(MAX(seq),0)+1 FROM chat_messages WHERE session_id=?", (session_id,)).fetchone()[0]
             message_id = str(uuid4())
             conn.execute("INSERT INTO chat_messages(id,session_id,role,content,seq) VALUES(?,?,?,?,?)", (message_id, session_id, role, content, sequence))
-            conn.execute("UPDATE chat_sessions SET updated_at=STRFTIME('%Y-%m-%d %H:%M:%f','now'),title=CASE WHEN title='New Chat' AND ?=1 THEN ? ELSE title END WHERE id=?", (sequence, content[:40], session_id))
+            auto_title = int(not preserve_session_title)
+            conn.execute("UPDATE chat_sessions SET updated_at=STRFTIME('%Y-%m-%d %H:%M:%f','now'),title=CASE WHEN title='New Chat' AND ?=1 AND ?=1 THEN ? ELSE title END WHERE id=?", (sequence, auto_title, content[:40], session_id))
             row = conn.execute("SELECT * FROM chat_messages WHERE id=?", (message_id,)).fetchone()
         return dict(row)
 

@@ -12,7 +12,9 @@ does not currently pin every package to an exact lockfile version.
 | Python | `>=3.14,<3.15`; observed 3.14.6 | Runtime for API, UI, tests, and MCP subprocesses |
 | FastAPI | `>=0.115,<1`; observed 0.141.1 | HTTP API and application lifespan |
 | Uvicorn | `>=0.30,<1`; observed 0.52.4 | ASGI server, loopback port 8765 by default |
-| Streamlit | `>=1.40,<2`; observed 1.65.0 | Local chat interface, port 8501 by default |
+| Streamlit | `streamlit[auth]>=1.55,<2`; observed 1.65.0 | Chat interface, local port 8501; Auth-C uses native OIDC and server-side API Access Token |
+| Authlib | Via Streamlit `auth` extra; observed 1.8.0 | OIDC login client runtime; real provider is not configured |
+| PyJWT | `PyJWT[crypto]>=2.10,<3`; observed 2.15.1 | FastAPI verifies API Access Token signature/issuer/audience/expiry using JWKS |
 | Pydantic | transitive; observed 2.13.4 | API schemas and validation |
 | SQLite | Python stdlib; SQLite 3.50.4 | Chat/User State persistence and isolated MCP business database |
 | ChromaDB | `>=1,<2`; observed 1.5.9 | Local knowledge and session RAG vector collections |
@@ -24,6 +26,12 @@ does not currently pin every package to an exact lockfile version.
 | pytest | `pytest>=8,<9`; observed 8.4.2 | Unit, integration, MCP protocol, and AppTest suite |
 | HTTPX | `>=0.27,<1`; observed 0.28.1 | DeepSeek/Tavily adapters and real HTTP acceptance |
 | sentence-transformers | `>=5.7,<6`; observed 5.7.0 | Optional E5 embedding provider; deterministic provider is the offline default |
+| Docker Compose | `deploy/compose.yaml` | Single API/Streamlit/volume topology; no Compose CLI version recorded and no runtime validation |
+| Caddy | `caddy:2.10` image in `deploy/compose.yaml` | HTTPS reverse proxy draft; no domain/TLS deployment validation |
+
+## v1.0 route freeze
+
+The planned v1.0 route is Python 3.14, FastAPI/Uvicorn, Streamlit native OIDC, module-owned SQLite, persistent single-instance Chroma, external OIDC API Access Tokens verified by FastAPI, Docker Compose on one Linux host, and Caddy for HTTPS. The observed values above are from the current Windows venv; they are not a production lock. There is no complete lockfile or pinned base-image digest yet. Compose/Caddy are configuration drafts and have not been started. See the canonical scope and dependency-ordered release evidence in [`V1_RELEASE_SCOPE.md`](V1_RELEASE_SCOPE.md).
 
 ## Request and tool relationships
 

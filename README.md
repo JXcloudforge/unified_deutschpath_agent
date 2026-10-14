@@ -1,239 +1,133 @@
-# Deutschpath Unified Agent v0.1.1.dev0
+# Deutschpath Unified Agent
 
-**LOCAL ENGINEERING BETA — development candidate, not a tagged release. Not
-production ready.** The version is defined once in `pyproject.toml`; FastAPI
-and Streamlit read it from `app/version.py`. The active application code lives
-at this Git root. Historical project folders are preserved for recovery and
-are not runtime dependencies.
+面向德语学习者的模块化对话 Agent。当前发布候选版本为 `0.1.1.dev0`；阶段四工程已实现 M07 会话历史、有限范围的 M08 编排、可选 M09 后续问题建议，并完成 M10 本地集成回归。它仍是本地/开发候选版本，尚未完成公网 OIDC、双用户生产隔离、容器部署与恢复验收，不应作为已验收的 v1.0 公网服务部署。
 
-## What is included
+## 产品功能与技术栈
 
-- FastAPI chat API and the recommended Streamlit chat interface.
-- Persistent sessions, messages, user learning profiles, and learning events.
-- TXT, Markdown, PDF, and DOCX parsing; direct attachment context and
-  session-isolated Chroma RAG.
-- Rule, LLM, and hybrid routing interfaces for `rag`, `web_search`, and
-  `no_tool`; mixed local and web evidence is supported.
-- Optional DeepSeek answer and routing provider; deterministic embeddings and
-  `FakeLLM` allow offline testing. `FakeLLM` is not the DeepSeek service.
-- Optional Tavily adapter and evidence aggregation. Real Tavily availability is
-  not implied by configuration.
-- Two real stdio MCP servers: restricted SQLite business database and RapidOCR
-  image extraction. The Host discovers and calls tools, stages authorized
-  images, requires explicit confirmation before writes, and verifies results.
+- FastAPI 提供 Chat、会话、附件、用户状态、身份验证及健康检查 API；默认开发端口为 `8765`。
+- Streamlit 提供 ChatWorkspace、登录接线和版本中心；默认本机端口为 `8501`。真实 OIDC Provider 未配置。
+- Python `>=3.14,<3.15`；FastAPI/Uvicorn；Streamlit；SQLite；ChromaDB；MCP Python SDK；RapidOCR/ONNX Runtime。依赖范围见 `pyproject.toml`；当前仓库没有完整 lockfile。
+- LLM 可选接 DeepSeek；离线测试使用 FakeLLM。联网搜索可选接 Tavily；未进行实时连接测试时不能将答案描述为实时联网结果。
+- TXT、MD、PDF、DOCX 文本解析和 Chroma RAG；扫描版 PDF 的通用 OCR 解析不在普通文件路径中。
+- MCP Database/OCR 经本机 stdio Host 调用。写入需经过预览、用户确认和读回；目前不提供公网 MCP endpoint。
 
-## Architecture and maintenance
+## 阶段四功能
 
-The actual request flow, data boundaries, and Router/MCP relationship are in
-[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). Feature evidence is tracked in
-[`docs/FEATURES.md`](docs/FEATURES.md), installed versions in
-[`docs/TECH_STACK.md`](docs/TECH_STACK.md), and operational steps in
-[`docs/DEBUGGING.md`](docs/DEBUGGING.md). Version notes are in
-[`docs/CHANGELOG.md`](docs/CHANGELOG.md) and `docs/releases/`.
+### M07 — 对话历史与上下文
 
-### Six engineering milestones (retrospective, not Git releases)
+Conversation 通过 `ConversationCommands` / `ConversationQueries` 管理会话、消息、附件元数据、会话改名及只读上下文快照。历史持久化于 SQLite，可在服务重启后恢复；上下文最多携带最近 20 条消息和 12,000 字符。该字符上限不是精确 token 预算，也没有持久化对话摘要。资源归属由可信业务边界检查；当前本地开发 `X-User-ID` 不等于用户认证。
 
-The technical evolution is recorded in [`docs/iterations/manifest.json`](docs/iterations/manifest.json):
-[M01 Agent](docs/iterations/M01_agent_foundation.md) →
-[M02 CRM](docs/iterations/M02_crm_state.md) →
-[M03 Chat](docs/iterations/M03_chat_application.md) →
-[M04 Files and RAG](docs/iterations/M04_file_rag.md) →
-[M05 Router and Web](docs/iterations/M05_router_web.md) →
-[M06 MCP Host](docs/iterations/M06_mcp_integration.md).
-These IDs describe engineering evolution; only `pyproject.toml` defines the
-application version, and `0.1.1.dev0` has no release tag.
+### M08 — 意图引导与有限编排
+
+M08 复用现有 IntentRouter、Conversation Command/Query 与独立编排状态。已验证范围是 `rename_session → list_sessions` 的固定双步骤流程，含澄清、提案确认、重复确认保护及本机重启恢复。它**不是**通用任务规划器：不支持任意复杂任务分解、CRM 写入型任务或任意工具编排；公网环境写入路径关闭。
+
+### M09 — 后续问题建议
+
+只读确定性建议服务最多给出 3 个问题，默认关闭。开启后，用户点击建议只会把问题填入输入框，是否发送仍由用户决定；不自动触发写操作。
+
+### M10 — 集成与验收
+
+集成覆盖 Chat/API、Router、RAG、Conversation、M08、M09、MCP/OCR 与文件解析。发布副本回归结果及真实运行范围见 [阶段四提交与截图指南](docs/submission/stage4/README.md) 和 [M10 验收记录](docs/PHASE4_M10_ACCEPTANCE.md)。自动化测试不等于公网生产验收；真实 OIDC、双真实账号、Router 150 题人工冻结、DeepSeek/Tavily 真实连接、MCP Inspector GUI 与生产部署/恢复均未完成。
+
+## 架构与公开接口
+
+模块遵循“业务模块自身 + Command API + Query API”：业务模块拥有自己的规则、状态、Repository 与事务，消费者只依赖稳定服务契约/DTO；FastAPI 负责 HTTP 适配、可信 Actor 注入和组合装配，不直接跨模块访问 Repository/ORM。ChatWorkspace 通过 `Stage2ApiClient` 访问 FastAPI。
 
 ```mermaid
 flowchart LR
-  I[Input] --> S[State: Chat + CRM]
-  S --> R[Reasoning: UnifiedOrchestrator + 3-class Router]
-  R --> A[Action: RAG / guarded Web / MCP Host on demand]
-  A --> E[Evidence: ContextBuilder + EvidenceAggregator]
-  E --> L[LLMClient: DeepSeek or FakeLLM]
-  L --> O[Response]
-  O --> P[SQLite persistence]
+  U[学习者] --> UI[Streamlit ChatWorkspace]
+  UI -->|HTTP / Bearer| API[FastAPI]
+  API --> AUTH[Auth: Access Token 验证与 Actor]
+  API --> CHAT[Conversation Commands / Queries]
+  CHAT --> DB[(模块自有 SQLite 状态)]
+  CHAT --> M08[M08 有界编排]
+  M08 -->|Command / Query| CHAT
+  CHAT --> ROUTER{IntentRouter}
+  ROUTER -->|rag| RAG[RAG Query / Chroma]
+  ROUTER -->|web_search| WEB[Tavily Adapter 可选]
+  ROUTER -->|no_tool| CTX[受限上下文]
+  RAG --> LLM[DeepSeek Adapter 或 FakeLLM]
+  WEB --> LLM
+  CTX --> LLM
+  LLM --> CHAT
+  CHAT --> M09[M09 可选只读建议]
+  API --> MCP[MCP Host / stdio OCR 与 Database]
 ```
 
-The Stage 3 Router chooses `rag`, `web_search`, or `no_tool`; `mixed_sources`
-is an evidence flag. MCP planning is a separate action path and does not add a
-fourth Router intent.
+边界细节见 [模块边界](docs/architecture/MODULE_BOUNDARIES.md)、[公开契约](docs/architecture/PUBLIC_CONTRACTS.md)、[M08 编排](docs/architecture/M08_ORCHESTRATION.md)。
 
-- **日常启动：** 双击 `start.bat`
-- **开发测试：** `scripts/run_tests.ps1`
-- **维护与调试：** `docs/DEBUGGING.md`
-- **版本更新记录：** `docs/CHANGELOG.md` 与 `docs/releases/`
-- **GitHub 独立仓库发布准备：** `docs/releases/GITHUB_PUBLISH_CHECKLIST.md`（仅清单；当前无自动提交/推送）
-- **技术演进时间线：** `docs/iterations/manifest.json` 与 M01–M06 记录
-- Streamlit 的“系统信息 · 版本更新”显示当前版本、更新说明、功能状态和六个可展开的技术节点。
-- **最近整理验收：** `docs/history/final-cleanup-20261013.md`
+## Windows 本地安装与启动
 
-## Project layout
-
-```text
-app/       API, Agent, Chat, User State, LLM, routing, RAG, web, files, MCP
-ui/        Streamlit application and API client
-tests/     Unit, integration, protocol, AppTest, and public OCR fixtures
-evals/     Router evaluation cases, annotation candidates, and metrics
-scripts/   One-click coordinator, server launch, HTTP acceptance, evaluation
-docs/      Architecture, feature status, stack, changelog, debugging, records
-           iterations/ contains the controlled M01–M06 technical timeline
-data/      Local runtime only; ignored by Git
-start.bat  Recommended single launcher
-```
-
-The four historical working directories (`01_agent`, `02_crm_agent`,
-`03_deutsch_chat`, and `04_stage2_unified_agent`) are not part of this active
-project tree and are not runtime dependencies. Historical source and selected
-legacy data protection are maintained outside the repository in the existing
-archive/backup locations. The repository's `.git` history and index are kept
-separate from that file archive; consult `docs/history/` before any Git
-publication because this checkout originated from CRM-agent and retains
-historical Git state.
-
-## Setup and configuration
-
-Use Python 3.14 (the project declares `>=3.14,<3.15`) and run from this Git
-root. Install only the dependencies declared by the project:
+要求 Windows PowerShell 和 Python 3.14。进入本仓库根目录：
 
 ```powershell
-python -m venv .venv
+cd .\Deutschpath_agent_publish
+py -3.14 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install --upgrade pip
 .\.venv\Scripts\python.exe -m pip install -e ".[dev]"
+Copy-Item .env.example .env
 ```
 
-You do not need to create or edit `.env` manually: the localhost API Settings
-panel creates it from `.env.example` when the first key is saved. Never commit
-`.env`. Process environment variables take precedence over `.env`.
-
-| Setting | Purpose | Beta default |
-| --- | --- | --- |
-| `DEEPSEEK_API_KEY` | Optional DeepSeek answer / LLM-router calls | Empty; `FakeLLM` |
-| `DEEPSEEK_BASE_URL`, `DEEPSEEK_MODEL` | DeepSeek endpoint and model | Official API / `deepseek-chat` |
-| `TAVILY_API_KEY` | Optional live web search | Empty; real search not tested |
-| `STAGE3_ROUTER` | `rules` or `hybrid` routing mode | `rules` |
-| `STAGE2_EMBEDDING_PROVIDER` | `deterministic` or `e5` | `deterministic` |
-| `STAGE2_DATA_PATH` | SQLite, Chroma, uploads, and MCP Host state root | `data/` |
-| `MCP_DATABASE_PATH` | Optional separate MCP business SQLite file | `<data root>/mcp_business.sqlite3` |
-| `DEUTSCHPATH_API_BASE_URL` | Streamlit backend API base URL | `http://127.0.0.1:8765` |
-| `OCR_INPUT_DIR` | Dedicated input directory for standalone OCR server | Set by trusted MCP Host |
-
-The Streamlit sidebar includes **API Settings** for this localhost-only beta.
-Start it with `scripts/start_frontend.ps1`, which binds only to
-`127.0.0.1`; the settings panel also rejects non-local Host headers. Keys are
-entered as password fields and written atomically to the Git-ignored root
-`.env`; existing unrelated settings are preserved. The app never returns or
-pre-fills stored key values. Restart FastAPI after saving, then run the manual
-DeepSeek or Tavily connection check from the panel. Process environment values
-take precedence over `.env`, and the backend health response reports the source
-and active provider/model without exposing credentials. This local beta panel
-is not production-grade credential management. Do not expose Streamlit or the
-API beyond localhost.
-
-The OCR package uses bundled RapidOCR models; startup does not fetch model
-weights. Choosing `e5` may require downloading/loading the sentence-transformer
-model. The deterministic provider is the reproducible offline option.
-
-## Run the application
-
-From the project root, use the one recommended entry point:
+`.env.example` 默认没有真实密钥，空的 `DEEPSEEK_API_KEY` 使用离线 FakeLLM；`TAVILY_API_KEY` 为空时不应声称实时联网。启动两个本地服务并打开浏览器：
 
 ```powershell
-.\start.bat
+.\scripts\start_app.ps1
 ```
 
-It checks the active `.venv`, dependencies, the 8765/8501 listeners, API
-identity and health, starts any missing service in its own PowerShell window,
-checks Streamlit health, then opens the browser. It does not stop an existing
-listener. If an older Deutschpath process owns a port, stop it with Ctrl+C in
-its window and run `start.bat` again. Personal OS port 8000 is never used.
+API：`http://127.0.0.1:8765/health`；Streamlit：`http://127.0.0.1:8501`。默认只绑定 loopback。关闭时分别在 FastAPI 与 Streamlit 窗口按 `Ctrl+C`，先停 UI 再停 API。启动脚本检测端口服务身份，不会擅自复用或关闭其他程序。
 
-For manual diagnosis, open two PowerShell terminals:
+M08 写入仅用于本地开发演示。启用前在本机 `.env` 明确设置 `APP_ENV=development`、`M08_LOCAL_ENABLED=true`，服务仍要求直接 loopback 请求；公网/production 不开放此实验写入。不要把个人 `.env`、`.streamlit/secrets.toml` 或密钥提交到 Git。
 
-```powershell
-.\scripts\start_backend.ps1
-.\scripts\start_frontend.ps1
-```
-
-The backend listens at `http://127.0.0.1:8765`; Streamlit at
-`http://127.0.0.1:8501`. Both scripts validate the root `.venv`, Python
-requirement, dependencies, and entry points. Press Ctrl+C to stop each process.
-The application does not automatically migrate or overwrite a database.
-The backend script checks that its selected port is available before launch and
-fails without connecting to or stopping any service already using that port.
-The one-click launcher delegates to these same PowerShell scripts and uses the
-same project `.venv` and API base URL setting. Press Ctrl+C in each service
-window to stop it (Streamlit first, then FastAPI).
-
-For isolated HTTP acceptance, use a new data directory and a non-production
-port. The MCP end-to-end acceptance script creates and removes its own temporary
-data directory:
-
-```powershell
-.\.venv\Scripts\python.exe scripts\mcp_b6_http_acceptance.py
-```
-
-## Chat, files, RAG, and learning profile
-
-Create a session, send messages, list sessions, and read history through the
-FastAPI API. The Streamlit sidebar supports session switching and profile
-updates. User state includes current/target CEFR level, learning goal,
-preferences, and learning events; it is included in Agent context. Session
-attachments are isolated by Chroma namespace. Small supported documents can be
-placed directly into context; larger documents use session RAG.
-
-The API identifies a local beta user using `X-User-ID`. This caller-supplied
-header is **not authentication**. Bind to localhost and use only local test
-identities; do not expose this service publicly.
-
-## MCP and OCR-to-database workflow
-
-The Host launches both MCP servers as local stdio subprocesses; there are no
-MCP HTTP ports. The Database MCP exposes `db_create_table`, `db_insert_rows`,
-and `db_query_readonly`, plus `db://schema` and the `ocr_to_db_workflow` prompt.
-OCR MCP exposes `ocr_extract`. Database names and columns are constrained,
-queries are read only, writes require a one-use Host approval after review, and
-operation identifiers prevent replay. OCR images are staged by the trusted Host
-inside its dedicated data root; arbitrary paths and URLs are not accepted.
-
-The user reviews OCR-derived candidate rows before confirmation. Only confirmed
-rows are written, then queried back; the result is stored in chat history. OCR
-output is untrusted and table cells are candidates, not guaranteed structure.
-
-## Tests and acceptance commands
-
-日常开发使用统一入口运行非 TestClient 回归：
+## 测试与验收命令
 
 ```powershell
 .\scripts\run_tests.ps1
-.\.venv\Scripts\python.exe -m compileall -q app ui scripts tests
+.\.venv\Scripts\python.exe -m pytest tests\integration\test_api_smoke.py -q
+.\.venv\Scripts\python.exe scripts\m08_b_http_acceptance.py
+.\.venv\Scripts\python.exe scripts\m08_c_http_acceptance.py
+.\.venv\Scripts\python.exe scripts\m09_http_acceptance.py
 .\.venv\Scripts\python.exe scripts\mcp_b6_http_acceptance.py
+.\.venv\Scripts\python.exe -m compileall -q app ui scripts tests
+git diff --check
 ```
 
-测试入口将 pytest 的数据库、Chroma 和 OCR 临时文件放入系统临时目录，成功或失败后自动清理。需要保留失败现场时，显式运行
-`.\scripts\run_tests.ps1 -KeepFailedArtifacts`；失败目录会打印出来供诊断。
-也可把额外 pytest 参数传给入口，例如：
+Router 离线评估使用 Rules 开发集（不是 150 题人工独立验收）：
 
 ```powershell
-.\scripts\run_tests.ps1 -PytestArgs @('tests/integration/test_mcp_host_workflow.py')
+.\.venv\Scripts\python.exe scripts\evaluate_intents_v2.py --router rules
 ```
 
-The Windows TestClient smoke is separately marked BLOCKED and excluded; it is
-not counted as passed. See `docs/CHANGELOG.md` and `docs/FEATURES.md` for the
-current worktree status, plus `docs/v0.1_beta_acceptance.md` for historical B7
-evidence.
+`verify_tavily_live.py` 和 Hybrid Router 可能调用真实 Provider 并产生费用；仅在获得授权并配置凭据后运行。未完成人工标注和冻结前，不报告 Router 150 题独立准确率。
 
-## Beta limits and v1.0 roadmap
+## 本次发布副本测试证据
 
-- Router accuracy of 98% has **not been verified** against a formally
-  human-labeled acceptance set. Unlabeled candidates do not count.
-- Real DeepSeek hybrid/function-call behavior is **not verified** for this
-  release; deterministic MCP planning is not native model function calling.
-- Real Tavily search is **not tested** unless a live request succeeds with a
-  configured key.
-- MCP Inspector acceptance is separate from SDK protocol tests.
-- Local caller-supplied user IDs are not production identity or authorization.
-- This release is **LOCAL ENGINEERING BETA**, not production ready.
+2026-10-14 在 `Deutschpath_agent_publish` 独立 Git clone 中验证：
 
-v1.0 work: authenticated identities and authorization; formally labeled router
-evaluation; verified live providers; deployment, monitoring, backups, and
-operational recovery; independent security review; and production-grade OCR
-quality evaluation.
+| 命令 / 操作 | 结果 | 限定 |
+|---|---|---|
+| `scripts/run_tests.ps1` | **269 passed, 1 skipped, 0 failed**；83.27 秒；2 条依赖弃用警告；exit 0 | 本地 `.venv` 是本次按 `--system-site-packages` 创建并对发布副本执行 `pip install -e ".[dev]"` 的验证环境；不是完全隔离的依赖镜像。唯一 skip 是当前 Windows 账户无法创建 OCR 测试 symlink |
+| `python -m pytest tests\integration\test_api_smoke.py -q` | **1 passed**；2 条依赖弃用警告；exit 0 | 单独运行；没有计入上面的全量测试统计 |
+| `scripts/m08_b_http_acceptance.py` | **PASS，exit 0**；loopback Uvicorn；普通 Chat、澄清、重启后确认、重复确认、跨用户拒绝、未支持写操作拒绝；目标标题 Query 读回正确 | 本机隔离数据库；不是公网 OIDC 认证 |
+| `scripts/m08_c_http_acceptance.py` | **PASS，exit 0**；`rename_session` 与 `list_sessions` 均 SUCCEEDED；重复确认不重复执行；标题读回正确 | 固定两步骤，不是通用规划器 |
+| `scripts/m09_http_acceptance.py` | **PASS，exit 0**；opt-in 返回 3 条 Ausbildung 建议、旧响应兼容、跨用户 404 | 使用本地服务/离线策略；建议只预填输入框 |
+| `scripts/mcp_b6_http_acceptance.py` | **PASS，exit 0**；真实 loopback Uvicorn 与 stdio MCP；确认前 0 行、确认后插入并读回 3 行、跨用户 404、正常关闭 | 不代表 MCP Inspector GUI 或公网 MCP 验收 |
+| `scripts/start_app.ps1 -CheckOnly` | **PASS，exit 0**；API/UI 依赖和版本可导入，端口可用 | 只执行启动前检查；本轮未打开 UI 浏览器窗口 |
+| `python -m compileall -q app ui scripts tests`；`git diff --check`；`git diff --cached --check` | 均 **PASS，exit 0** | Git 对现有 CRLF 转换有提示；无 whitespace error |
+| `scripts/evaluate_intents.py` | **18/18（100%）** | 18 条离线小样本，不是 300 开发集或 150 题人工独立验收 |
+
+运行回归的解释器来自本次副本的 `.venv`；该环境为本次临时创建用于验证，`.venv` 被 `.gitignore` 排除且不会提交。完整 fresh isolated environment / Docker build 尚未验证。通过本机自动测试不表示真实 OIDC、公网服务或真实 DeepSeek/Tavily 验收通过。
+
+## 课程第四阶段证据
+
+`docs/submission/stage3/` 保留阶段三验收材料；`docs/submission/stage4/README.md` 提供阶段四演示顺序、截图文件命名、服务启动步骤和架构图。当前没有伪造或预制的运行截图。需要提交可视证据时，按指南实际启动应用和测试后截图；只截图不含密钥、私人附件或真实用户会话的临时演示数据。
+
+## 已知限制与未完成事项
+
+- 真实 OIDC Provider、面向 API 的 Access Token audience、双真实账号公网资源隔离、浏览器 Cookie/CSRF/登出策略尚未验收；`X-User-ID` 仅是开发分区标识。
+- Docker Compose 与 Caddy 尚未完成真实 HTTPS、WebSocket、限流、上传限制、监控和恢复演练；不应向公网开放。
+- DeepSeek/Tavily 实时请求需另行授权和留存脱敏证据；MCP Inspector GUI 尚未验收。
+- Router 人工独立集仍未审阅/冻结。工具依赖空白工作表运行，但不得用开发集结果冒充人工真值。
+- SQLite/Chroma 目前按单实例本机/单机方案设计；不承诺多 API 副本写一致性或跨模块 exactly-once。
+- 依赖范围未锁定到完整 lockfile/镜像 digest；Windows symlink 环境仍有一个被跳过的测试。
+
+公网范围、技术路线和 release blockers 见 [v1.0 范围冻结](docs/V1_RELEASE_SCOPE.md)、[发布清单](docs/RELEASE_CHECKLIST.md) 与 [发布阻塞项](docs/RELEASE_BLOCKERS.md)。应用版本仍为 `0.1.1.dev0`。

@@ -1,3 +1,23 @@
+"""Conversation module public service contracts and immutable DTOs."""
+
+from .contracts import (
+    ActorContext,
+    ConversationCommands,
+    ConversationContextSnapshot,
+    ConversationMessage,
+    ConversationQueries,
+    ConversationSession,
+    SendMessageResult,
+)
 from .service import ChatService
-from .repository import ChatRepository
-__all__ = ["ChatService", "ChatRepository"]
+
+__all__ = [
+    "ActorContext",
+    "ChatService",
+    "ConversationCommands",
+    "ConversationContextSnapshot",
+    "ConversationMessage",
+    "ConversationQueries",
+    "ConversationSession",
+    "SendMessageResult",
+]

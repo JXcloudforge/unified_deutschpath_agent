@@ -6,7 +6,9 @@ import streamlit as st
 from app.version import DISPLAY_VERSION
 from ui.api_client import ApiContractError, Stage2ApiClient, request_error_detail, resolve_api_base_url
 from ui import local_settings
+from ui.suggestion_controls import render_suggestion_buttons
 from ui.version_info import load_version_information
+from ui.authentication import access_token_from_user, identity_cache_scope, oidc_configuration_ready, production_api_origin_ready
 
 BASE = resolve_api_base_url()
 logger = logging.getLogger(__name__)
@@ -173,19 +175,76 @@ def _render_chat_message(message: dict[str, str]) -> None:
 
 
 st.title(f"Deutschpath Unified Agent · {DISPLAY_VERSION}")
-user_id = st.text_input("User ID", "demo-user").strip()
-if st.session_state.get("ui_user_id") != user_id:
+APP_ENV = os.getenv("APP_ENV", "development").strip().lower()
+api_user_id: str | None
+if APP_ENV == "production":
+    provider = os.getenv("DEUTSCHPATH_OIDC_PROVIDER", "auth0")
+    try:
+        secrets = st.secrets
+        configured = oidc_configuration_ready(secrets, provider, production=True)
+    except Exception:
+        configured = False
+    try:
+        from importlib.util import find_spec
+        auth_runtime_ready = find_spec("authlib") is not None
+    except (ImportError, ValueError):
+        auth_runtime_ready = False
+    api_origin_ready = production_api_origin_ready(BASE)
+    if not configured or not auth_runtime_ready or not api_origin_ready:
+        st.error("生产登录尚未配置完整。请配置 Streamlit OIDC、Authlib 与安全的 API 内网地址后重启。")
+        st.stop()
+    try:
+        logged_in = st.user.is_logged_in
+    except Exception:
+        logged_in = False
+    if not logged_in:
+        st.info("请使用组织登录继续。")
+        if st.button("使用 OIDC 登录", key="oidc_login"):
+            st.login(provider)
+        st.stop()
+    token = access_token_from_user(st.user)
+    cache_scope = identity_cache_scope(st.user)
+    if not token or not cache_scope:
+        st.error("登录成功，但未取得可供 API 使用的可信身份或 Access Token。请重新登录或联系管理员。")
+        if st.button("重新登录", key="oidc_relogin_missing_token"):
+            st.logout()
+        st.stop()
+    if st.session_state.get("oidc_cache_scope") != cache_scope:
+        for key in list(st.session_state):
+            if key != "oidc_cache_scope":
+                st.session_state.pop(key, None)
+        st.session_state.oidc_cache_scope = cache_scope
+    def _require_reauthentication() -> None:
+        st.session_state["api_reauthentication_required"] = True
+    client = Stage2ApiClient(BASE, access_token=token, on_unauthorized=_require_reauthentication)
+    if st.session_state.get("api_reauthentication_required"):
+        st.error("API 会话已过期或被拒绝。请重新登录后继续。")
+        if st.button("退出并重新登录", key="oidc_reauth"):
+            st.session_state.clear()
+            st.logout()
+        st.stop()
+    with st.sidebar:
+        st.caption("已通过组织账号登录")
+        if st.button("退出登录", key="oidc_logout"):
+            st.session_state.clear()
+            st.logout()
+    api_user_id = None
+else:
+    api_user_id = st.text_input("User ID", "demo-user").strip()
+user_id = api_user_id
+if APP_ENV != "production" and st.session_state.get("ui_user_id") != user_id:
     # Adapt the user-scoped cleanup from 03's ui/state.py to 04's state keys.
     for key in list(st.session_state):
-        if key in {"session_id", "session_picker", "uploaded_attachment_fingerprints", "learning_profile", "ocr_upload_fingerprint", "ocr_staged_image", "ocr_preview"} or key.startswith(("profile_", "ocr-")):
+        if key in {"session_id", "session_picker", "uploaded_attachment_fingerprints", "learning_profile", "ocr_upload_fingerprint", "ocr_staged_image", "ocr_preview", "m09_suggestions"} or key.startswith(("profile_", "ocr-")):
             st.session_state.pop(key, None)
     st.session_state.ui_user_id = user_id
-if not user_id:
+if APP_ENV != "production" and not user_id:
     st.warning("请输入 User ID。")
     st.stop()
 
 with st.sidebar:
     st.subheader("对话")
+    st.checkbox("推荐后续问题（可随时关闭）", key="m09_suggestions_enabled", value=False)
     if st.button("＋ 新建会话", key="create_session"):
         try:
             session = client.create_session(user_id)
@@ -367,6 +426,11 @@ if session_id:
         messages = []
     for message in messages:
         _render_chat_message(message)
+    if not st.session_state.get("m09_suggestions_enabled", False):
+        st.session_state.pop("m09_suggestions", None)
+    else:
+        session_suggestions = st.session_state.get("m09_suggestions", {}).get(session_id, [])
+        render_suggestion_buttons(st, session_suggestions, session_id)
     if content := st.chat_input(
         "Ask about German or your uploaded material", key="chat_input", submit_mode="disable"
     ):
@@ -375,10 +439,17 @@ if session_id:
         _render_chat_message({"role": "user", "content": content})
         send_result = None
         send_error = None
+        st.session_state.setdefault("m09_suggestions", {}).pop(session_id, None)
         with st.chat_message("assistant"):
             with st.spinner("正在处理，请稍候…"):
                 try:
-                    send_result = client.send_message(user_id, session_id, content)
+                    if st.session_state.get("m09_suggestions_enabled", False):
+                        send_result = client.send_message(
+                            user_id, session_id, content, include_suggestions=True,
+                        )
+                    else:
+                        # Preserve the legacy client call shape while the opt-in is off.
+                        send_result = client.send_message(user_id, session_id, content)
                 except Exception as exc:
                     send_error = exc
                     logger.warning("Send-message request failed (%s)", type(exc).__name__)
@@ -413,8 +484,13 @@ if session_id:
                     operation.setdefault("session_id", session_id)
                     st.session_state.ocr_preview = operation
                 st.markdown(send_result["assistant_message"]["content"])
+                suggestions = send_result.get("suggestions", [])
+                if suggestions and st.session_state.get("m09_suggestions_enabled", False):
+                    st.session_state.setdefault("m09_suggestions", {})[session_id] = suggestions[:3]
         if send_result is not None and send_result.get("tool_operation") is not None:
             # OCR review controls are rendered from session state on the next run.
+            st.rerun()
+        if send_result is not None and st.session_state.get("m09_suggestions", {}).get(session_id):
             st.rerun()
 
 with st.sidebar:

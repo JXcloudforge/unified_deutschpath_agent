@@ -2,6 +2,12 @@
 .env
 .env.*
 !.env.example
+.secrets/
+secrets/
+/.streamlit/secrets.toml
+**/.streamlit/secrets.toml
+*.pem
+*.key
 
 # Python environments, build artifacts, and caches
 .venv/
@@ -24,6 +30,11 @@ htmlcov/
 
 # Local databases, vector stores, uploads, OCR input, and MCP state
 /data/
+**/chroma/
+/vector_store/
+/uploads/
+/mcp_ocr_inputs/
+/mcp_workflows/
 *.db
 *.db-wal
 *.db-shm
@@ -31,6 +42,7 @@ htmlcov/
 *.sqlite3
 *.sqlite-wal
 *.sqlite-shm
+*.parquet
 *.log
 *.tmp
 
