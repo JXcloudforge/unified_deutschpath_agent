@@ -84,6 +84,11 @@ def normalize_send_result(payload: object) -> dict[str, Any]:
         ):
             raise ApiContractError("suggestions must be a list of suggestion DTOs")
         normalized["suggestions"] = [dict(item) for item in suggestions]
+    if "orchestration" in payload:
+        operation = payload.get("orchestration")
+        if operation is not None and not isinstance(operation, Mapping):
+            raise ApiContractError("orchestration must be an object or null")
+        normalized["orchestration"] = dict(operation) if operation is not None else None
     return normalized
 
 

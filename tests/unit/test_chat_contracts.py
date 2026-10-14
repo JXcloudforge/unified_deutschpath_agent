@@ -5,6 +5,7 @@ import pytest
 
 from app.chat import ActorContext, ConversationMessage, ConversationSession
 from app.chat.context import ConversationContextBuilder
+from ui.api_client import ApiContractError, normalize_send_result
 
 
 def message(seq: int, role: str, content: str) -> ConversationMessage:
@@ -53,6 +54,21 @@ def test_public_session_dto_is_immutable_and_preserves_http_fields():
     }
     with pytest.raises(FrozenInstanceError):
         session.title = "changed"
+
+
+def test_send_response_preserves_m08_public_operation_dto():
+    response = normalize_send_result({
+        "user_message": {"role": "user", "content": "确认"},
+        "assistant_message": {"role": "assistant", "content": "已完成"},
+        "orchestration": {"status": "SUCCEEDED", "steps": []},
+    })
+    assert response["orchestration"]["status"] == "SUCCEEDED"
+    with pytest.raises(ApiContractError, match="orchestration"):
+        normalize_send_result({
+            "user_message": {"role": "user", "content": "确认"},
+            "assistant_message": {"role": "assistant", "content": "完成"},
+            "orchestration": "not-an-object",
+        })
 
 
 def test_ui_and_api_do_not_import_or_access_chat_repository():

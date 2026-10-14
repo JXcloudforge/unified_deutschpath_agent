@@ -15,6 +15,7 @@
     {"id": "M10", "title": "Integration quality and release boundary", "summary": "整合回归、Actor 身份边界和部署草案，并明确本地通过与正式发布阻塞项。", "features": ["Cross-module integration and API acceptance", "Auth token/Actor boundary with fail-closed production path", "Compose/Caddy deployment drafts and release gates"], "technology": ["pytest and loopback HTTP", "PyJWT/JWKS", "Streamlit OIDC integration", "Docker Compose and Caddy drafts"], "chain": "Verified Actor → owned Commands/Queries → module tests → local HTTP acceptance → release gate review", "problem": "功能集成后需要保留可追溯测试证据，并区分本地工程完成与公网生产验收。", "status": "Local integration TESTED; real OIDC, two-account public isolation, independent Router evaluation, and production deployment NOT VERIFIED", "document": "docs/iterations/M10_integration_release.md"}
   ],
   "releases": [
+    {"version": "0.2.1", "status": "local integration stability release; public production NOT VERIFIED", "document": "docs/releases/v0.2.1.md"},
     {"version": "0.1.1.dev0", "status": "unreleased development candidate", "document": "docs/releases/v0.1.1.dev0.md"},
     {"version": "0.1.0-beta.1", "status": "historical local engineering beta acceptance record", "document": "docs/releases/v0.1.0-beta.1.md"}
   ]

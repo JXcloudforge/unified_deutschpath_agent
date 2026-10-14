@@ -10,8 +10,8 @@ from app.orchestration.contracts import Orchestration, OrchestrationStatus
 from app.orchestration.service import ExecutionUncertainError, OrchestrationService
 
 
-_RENAME_INTENT = re.compile(r"(?:会话|对话).{0,18}(?:改名|重命名)|rename\s+(?:this\s+)?session", re.I)
-_NAME_CAPTURE = re.compile(r"(?:改名为|重命名为|改为|改成|命名为|rename\s+(?:this\s+)?session\s+to)\s*(.*)$", re.I)
+_RENAME_INTENT = re.compile(r"(?:(?:会话|对话).{0,18}(?:改名|重命名)|(?:改名|重命名).{0,12}(?:会话|对话)|rename\s+(?:this\s+)?session)", re.I)
+_NAME_CAPTURE = re.compile(r"(?:重命名(?:当前)?(?:会话|对话)(?:为|成)?|改名(?:为)?|重命名(?:为)?|改为|改成|命名为|rename\s+(?:this\s+)?session\s+to)\s*(.*)$", re.I)
 _RENAME_THEN_LIST = re.compile(
     r"^(?:先)?把当前会话(?:改名(?:为)?|重命名(?:为)?)\s*(.*?)\s*(?:，|,)?\s*(?:然后|再)\s*(?:列出|显示)(?:一下)?我的会话[。.!！]?$"
 )
@@ -239,7 +239,9 @@ def _parse_rename(text: str) -> tuple[bool, str | None | str]:
     captured = _NAME_CAPTURE.search(text)
     if captured is None:
         return True, None
-    return True, _clean_name(captured.group(1)) or "ambiguous"
+    raw_name = captured.group(1)
+    cleaned = _clean_name(raw_name)
+    return True, cleaned if cleaned else (None if not raw_name.strip() else "ambiguous")
 
 
 def normalized_control(text: str) -> bool:

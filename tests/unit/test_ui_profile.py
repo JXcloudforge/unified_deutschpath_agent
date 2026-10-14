@@ -249,12 +249,12 @@ def test_system_information_panel_shows_current_version_and_release_history(ui_b
     app = AppTest.from_file(str(APP)).run()
     assert not app.exception
     visible_text = list(app.markdown) + list(app.caption) + list(app.text)
-    assert any("v0.1.1.dev0" in item.value and "unreleased development candidate" in item.value.lower()
+    assert any("v0.2.1" in item.value and "local integration stability release" in item.value.lower()
                for item in visible_text)
-    assert app.selectbox(key="version_history_selector").options == ["0.1.1.dev0", "0.1.0-beta.1"]
+    assert app.selectbox(key="version_history_selector").options == ["0.2.1", "0.1.1.dev0", "0.1.0-beta.1"]
     milestone_labels = [item.label for item in app.expander]
     assert all(any(label.startswith(f"M{number:02d} ·") for label in milestone_labels) for number in range(1, 11))
-    assert any("M06" in item.value for item in app.markdown)
+    assert any("M08" in item.value for item in app.markdown)
     app.selectbox(key="version_history_selector").select("0.1.0-beta.1").run()
     assert not app.exception
     assert any("163 passed, 1 skipped" in item.value for item in app.markdown)
@@ -274,6 +274,27 @@ def test_chat_send_renders_user_and_assistant_immediately_without_rerun(ui_backe
         "History: session-a", "Hallo", "Reply: Hallo",
     ]
     assert len(ui_backend.history_reads) == prior_reads + 1
+
+
+def test_m08_response_refreshes_session_title_from_query(ui_backend):
+    original_send = ui_backend.send_message
+
+    def rename_result(user_id, session_id, content):
+        ui_backend.rename_session(user_id, session_id, "德语A1复习")
+        original_send(user_id, session_id, content)
+        return {
+            "user_message": {"role": "user", "content": content},
+            "assistant_message": {"role": "assistant", "content": "已重命名并核验。"},
+            "orchestration": {"status": "SUCCEEDED", "steps": []},
+        }
+
+    ui_backend.send_message = rename_result
+    app = AppTest.from_file(str(APP)).run()
+    app.selectbox(key="session_picker").select("session-a").run()
+    app.chat_input(key="chat_input").set_value("确认").run()
+    assert not app.exception
+    assert ui_backend.sessions["demo-user"][0]["title"] == "德语A1复习"
+    assert any(item.value == "德语A1复习" for item in app.header)
 
 
 def test_timed_out_post_recovers_persisted_turn_from_session_history_without_resend(ui_backend):

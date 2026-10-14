@@ -1,4 +1,28 @@
-# Changelog
+# 更新日志
+
+## v0.2.1 — 本地集成稳定性更新
+
+### 新增
+- 中文产品主 README 与独立英文 README。
+- 可选本机隔离演示启动模式；只绑定 loopback，使用独立演示目录、FakeLLM、Rules Router 和确定性 Embedding。
+
+### 修复
+- M08 会话重命名识别补充中文语序变体，包括“重命名当前会话为……”。
+- M08 HTTP DTO 的 `orchestration` 状态由 UI API Client 保留，完成后刷新 Conversation Query 数据，使侧栏和标题同步。
+- `scripts/run_tests.ps1` 保存为带 UTF-8 BOM 的 PowerShell 5.1 兼容编码；脚本参数、退出码、临时目录保护及清理流程保持不变。
+
+### 优化
+- Streamlit 中文排版字号、行高、主区阅读宽度和侧栏宽度集中在 `ui/visual_styles.py`；不写颜色值，保留用户所选主题。
+- 版本中心继续使用受控 manifest 展示 M01–M10 及版本历史。
+
+### 验证
+- PowerShell 7 与 Windows PowerShell 5.1 全量 pytest 均为 276 passed、1 skipped、0 failed；独立 API Smoke 为 1 passed。
+- M08-B/M08-C、M09、MCP B6 的隔离 loopback HTTP 验收通过。真实浏览器 DemoMode 操作与标题刷新通过；浏览器截图文件未保存，明确列为未交付。
+- 公网 OIDC、真实 DeepSeek/Tavily、Router 150 题人工独立验收、MCP Inspector GUI 和生产容器恢复仍未验证。
+
+---
+
+此文件记录仓库事实与当前工作树状态；除非明确列出 Git 提交或 Tag，否则不表示已创建提交或发布。
 
 This file records repository evidence and current working-tree state. A line
 does not imply a Git commit or release tag unless one is listed explicitly.

@@ -8,12 +8,16 @@ from ui.api_client import ApiContractError, Stage2ApiClient, request_error_detai
 from ui import local_settings
 from ui.suggestion_controls import render_suggestion_buttons
 from ui.version_info import load_version_information
+from ui.visual_styles import render_visual_styles
 from ui.authentication import access_token_from_user, identity_cache_scope, oidc_configuration_ready, production_api_origin_ready
 
 BASE = resolve_api_base_url()
 logger = logging.getLogger(__name__)
 client = Stage2ApiClient(BASE)
 st.set_page_config(page_title="Deutschpath Unified Agent", layout="wide")
+render_visual_styles(st)
+if os.getenv("DEUTSCHPATH_DEMO_MODE") == "1":
+    st.info("本机隔离演示模式 · 数据保存在独立演示目录 · 不调用付费 AI 或联网搜索服务")
 
 
 def _save_api_credential(name: str, widget_key: str, result_key: str) -> None:
@@ -263,6 +267,11 @@ with st.sidebar:
         st.error(f"无法加载会话列表：{request_error_detail(exc)}")
     else:
         all_sessions = sessions
+        if st.session_state.pop("_refresh_session_picker", False):
+            # Clear widget-derived labels before constructing the selectbox again.
+            st.session_state.pop("session_picker", None)
+            st.session_state.pop("rename_session_id", None)
+            st.session_state.pop("rename_session_title", None)
         session_search = st.text_input("搜索会话", key="session_search", placeholder="按标题搜索")
         if session_search.strip():
             needle = session_search.strip().casefold()
@@ -487,6 +496,10 @@ if session_id:
                 suggestions = send_result.get("suggestions", [])
                 if suggestions and st.session_state.get("m09_suggestions_enabled", False):
                     st.session_state.setdefault("m09_suggestions", {})[session_id] = suggestions[:3]
+        if send_result is not None and send_result.get("orchestration", {}).get("status") in {"SUCCEEDED", "PARTIAL"}:
+            # Reload session metadata after M08 updates the title.
+            st.session_state["_refresh_session_picker"] = True
+            st.rerun()
         if send_result is not None and send_result.get("tool_operation") is not None:
             # OCR review controls are rendered from session state on the next run.
             st.rerun()

@@ -76,6 +76,29 @@ def main() -> int:
             with httpx.Client(base_url=base, timeout=30, trust_env=False) as client:
                 health = wait_ready(client, process)
                 headers = {"X-User-ID": "m08b-" + uuid4().hex}
+                direct_session = client.post("/sessions", headers=headers)
+                direct_session.raise_for_status()
+                direct_id = direct_session.json()["id"]
+                direct = client.post(f"/sessions/{direct_id}/messages", headers=headers,
+                                     json={"content": "我让你把当前对话改名为德语A1复习"})
+                direct.raise_for_status()
+                direct_operation = direct.json()["orchestration"]
+                if direct_operation["status"] != "AWAITING_CONFIRMATION":
+                    raise RuntimeError("direct rename wording did not create a confirmation proposal")
+                direct_confirm = client.post(f"/sessions/{direct_id}/messages", headers=headers,
+                                             json={"content": "确认"})
+                direct_confirm.raise_for_status()
+                direct_sessions = client.get("/sessions", headers=headers)
+                direct_sessions.raise_for_status()
+                direct_title = next(item["title"] for item in direct_sessions.json() if item["id"] == direct_id)
+                if direct_title != "德语A1复习" or direct_confirm.json()["orchestration"]["status"] != "SUCCEEDED":
+                    raise RuntimeError("direct rename did not execute and verify through Conversation Query")
+                direct_replay = client.post(f"/sessions/{direct_id}/messages", headers=headers,
+                                            json={"content": "确认"})
+                direct_replay.raise_for_status()
+                if "没有再次执行" not in direct_replay.json()["assistant_message"]["content"]:
+                    raise RuntimeError("direct rename duplicate confirmation was not idempotent")
+
                 created = client.post("/sessions", headers=headers)
                 created.raise_for_status()
                 session_id = created.json()["id"]
@@ -140,6 +163,7 @@ def main() -> int:
                 history.raise_for_status()
                 report.update({
                     "health": health.status_code,
+                    "direct_named_rename": direct_title,
                     "ordinary_chat": ordinary.status_code,
                     "clarification": missing.status_code,
                     "confirmation_after_restart": confirmed.status_code,
@@ -154,7 +178,8 @@ def main() -> int:
             log.flush()
             log.close()
         report["startup_complete"] = "Application startup complete" in log_path.read_text(encoding="utf-8", errors="replace")
-        print(json.dumps(report, ensure_ascii=False, sort_keys=True))
+        # ASCII escapes keep the acceptance report printable in legacy Windows consoles.
+        print(json.dumps(report, ensure_ascii=True, sort_keys=True))
         if not report["startup_complete"]:
             return 1
     return 0

@@ -32,7 +32,7 @@ def main() -> int:
                 session_id = created.json()["id"]
 
                 request = client.post(f"/sessions/{session_id}/messages", headers=headers,
-                    json={"content": "把当前会话改名为德语学习，然后列出我的会话"})
+                    json={"content": "先把当前会话改名为Deutschpath产品演示，然后列出我的会话"})
                 request.raise_for_status()
                 plan = request.json()["orchestration"]
                 if plan["status"] != "AWAITING_CONFIRMATION":
@@ -44,7 +44,7 @@ def main() -> int:
 
                 before = client.get("/sessions", headers=headers)
                 before.raise_for_status()
-                if next(item["title"] for item in before.json() if item["id"] == session_id) == "德语学习":
+                if next(item["title"] for item in before.json() if item["id"] == session_id) == "Deutschpath产品演示":
                     raise RuntimeError("the Command ran before confirmation")
 
             stop_server(process)
@@ -62,16 +62,16 @@ def main() -> int:
                 if [step["status"] for step in steps] != ["SUCCEEDED", "SUCCEEDED"]:
                     raise RuntimeError(f"step results were incomplete: {steps}")
                 listing = json.loads(steps[1]["result_reference"])
-                if not any(item["title"] == "德语学习" for item in listing):
+                if not any(item["title"] == "Deutschpath产品演示" for item in listing):
                     raise RuntimeError("Query result did not include the renamed session")
                 answer = body["assistant_message"]["content"]
-                if "德语学习" not in answer or "当前会话列表" not in answer:
+                if "Deutschpath产品演示" not in answer or "当前会话列表" not in answer:
                     raise RuntimeError("assistant response did not report both completed steps")
 
                 sessions = client.get("/sessions", headers=headers)
                 sessions.raise_for_status()
                 persisted_title = next(item["title"] for item in sessions.json() if item["id"] == session_id)
-                if persisted_title != "德语学习":
+                if persisted_title != "Deutschpath产品演示":
                     raise RuntimeError("Conversation Query did not verify persisted rename")
                 replay = client.post(f"/sessions/{session_id}/messages", headers=headers,
                     json={"content": "确认"})

@@ -10,7 +10,7 @@ from app.chat.repository import ChatRepository
 from app.files import FileService
 from app.orchestration import OrchestrationService
 from app.orchestration.chat_adapter import (
-    ConversationListSessionsQuery, ConversationRenameExecutor, M08ChatAdapter,
+    ConversationListSessionsQuery, ConversationRenameExecutor, M08ChatAdapter, _parse_rename,
 )
 from app.routing import RuleBasedIntentRouter
 from app.orchestration.service import ExecutionUncertainError
@@ -30,6 +30,16 @@ def build_adapter(tmp_path, chat):
         {"rename_session": ConversationRenameExecutor(chat, chat),
          "list_sessions": ConversationListSessionsQuery(chat)})
     return M08ChatAdapter(chat, chat, state), state
+
+
+@pytest.mark.parametrize("text,title", [
+    ("把当前会话改名", None),
+    ("把当前对话改名为德语A1复习", "德语A1复习"),
+    ("我让你把当前对话改名为德语A1复习", "德语A1复习"),
+    ("重命名当前会话为德语学习计划", "德语学习计划"),
+])
+def test_rename_parser_covers_supported_chinese_word_orders(text, title):
+    assert _parse_rename(text) == (True, title)
 
 
 def test_http_multiturn_clarify_confirm_and_duplicate_confirmation(tmp_path, monkeypatch):

@@ -61,8 +61,13 @@ try {
         $ApiBaseUrl = "http://127.0.0.1:8765"
     }
     $env:DEUTSCHPATH_API_BASE_URL = $ApiBaseUrl
-    # Credential management is enabled only by this localhost-only launcher.
-    $env:DEUTSCHPATH_LOCAL_SETTINGS_ENABLED = "1"
+    # Credential management is disabled in the isolated demo environment.
+    if ($env:DEUTSCHPATH_DEMO_MODE -eq "1") {
+        $env:DEUTSCHPATH_LOCAL_SETTINGS_ENABLED = "0"
+    }
+    else {
+        $env:DEUTSCHPATH_LOCAL_SETTINGS_ENABLED = "1"
+    }
     $ApiUri = $null
     if (-not [uri]::TryCreate($ApiBaseUrl, [UriKind]::Absolute, [ref]$ApiUri) -or $ApiUri.Scheme -notin @("http", "https")) {
         Stop-WithMessage "DEUTSCHPATH_API_BASE_URL 必须是有效的 HTTP 或 HTTPS 地址。"
